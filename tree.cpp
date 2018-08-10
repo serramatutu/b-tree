@@ -4,7 +4,7 @@
 #include <utility>
 
 template <typename T>
-Tree<T>::Tree(T info, int n) : info(info) {
+Tree<T>::Tree(int n) {
     children.resize(n);
 }
 
@@ -43,10 +43,38 @@ Tree<T>::~Tree(Tree&& other)
 
 template <typename T>
 std::ostream& Tree<T>::operator<<(std::ostream& s) {
-    s << "( " << info << " ";
-    for (Tree* t : children)
-        if (t != nullptr)
-            s << *t;
+    s << "(";
+    for (auto it = info.cbegin(); it != info.cend(); it++) {
+        s << "[" << *it << "]";
+        if (children[it - info.cbegin()] != nullptr)
+            s << *children[it - info.cbegin()];
+    }
+    // printa o ultimo
+    if (children.back() != null)
+        s << children.back();
+
     s << ")";
     return s;
+}
+
+template <typename T>
+std::forward_list<T>::iterator Tree<T>::getIterator(const T& data) {
+    auto it = info.begin();
+    while (it != info.end() && *it < data)
+        it++;
+    return it;
+}
+
+template <typename T>
+void Tree<T>::insert(T data) {
+    auto it = getIterator(data);
+    if (info.size() == children.count()) { // se o vetor de dados já está cheio
+        int index = it - info.begin();
+        if (children[index] == nullptr)
+            children[index] = new Tree(children.size());
+        children[index].insert(data);
+    }
+    else {
+        info.insert_after(it, data);
+    }
 }

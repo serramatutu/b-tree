@@ -3,12 +3,15 @@
 
 #include <iostream>
 #include <vector>
+#include <forward_list>
 
 template <typename T>
 class Tree {
     protected:
-        T info;
+        std::forward_list<T> info;
         std::vector<Tree*> children;
+
+        std::forward_list<T>::iterator getIterator(const T& data);
 
     public:
         Tree(int n);
@@ -20,6 +23,8 @@ class Tree {
         Tree(Tree&& other);
 
         std::ostream& operator<< (std::ostream% s);
+
+        void insert(T data);
 };
 
 #endif
