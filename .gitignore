@@ -45,4 +45,4 @@
 
 # End of https://www.gitignore.io/api/c++,visualstudiocode
 
-/bin
+bin/*
