@@ -1,0 +1,28 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build main debug",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-g", "-o", "./bin/a.out", "--std=c++11", "main.cpp"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "build main clean",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-o", "./bin/a.out", "--std=c++11", "main.cpp"
+            ],
+            "group": "build"
+        }
+    ]
+}

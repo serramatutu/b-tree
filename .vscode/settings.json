@@ -1,0 +1,15 @@
+{
+    "files.associations": {
+        "array": "cpp",
+        "initializer_list": "cpp",
+        "utility": "cpp",
+        "iostream": "cpp",
+        "deque": "cpp",
+        "forward_list": "cpp",
+        "unordered_map": "cpp",
+        "vector": "cpp"
+    },
+    "code-runner.executorMap": {
+        "cpp": "cd $dir && g++ $fileName -o $fileNameWithoutExt --std=c++11 && $dir$fileNameWithoutExt",
+    }
+}
