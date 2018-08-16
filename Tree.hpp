@@ -8,6 +8,7 @@
 // usados pela implementação
 #include <algorithm>
 #include <utility>
+#include <stdexcept>
 
 template <typename T>
 class Tree {
@@ -18,7 +19,7 @@ class Tree {
         typename std::vector<T>::iterator getIterator(const T& data);
 
     public:
-        Tree(int n);
+        Tree(unsigned int n);
         ~Tree();
 
         Tree(const Tree& other);
@@ -27,12 +28,16 @@ class Tree {
         Tree(Tree&& other);
 
         void insert(T data);
+        bool remove(const T& data);
 
         template <typename U> friend std::ostream& operator<<(std::ostream& os, const Tree<U>& t);
 };
 
 template <typename T>
-Tree<T>::Tree(int n) {
+Tree<T>::Tree(unsigned int n) {
+    if (n < 1)
+        throw std::invalid_argument("Invalid tree node size");
+
     info.reserve(n);
     children.resize(n+1, nullptr);
 }
@@ -108,5 +113,33 @@ void Tree<T>::insert(T data) {
         info.insert(it, data);
     }
 }
+
+template <typename T>
+bool Tree<T>::remove(const T& data) {
+    auto it = getIterator(data);
+    int index = it - info.begin();
+    // se não encontrou na árvore atual
+    if (*it != data) {
+        if (children[index] == nullptr) // não está nas filhas
+            return false;
+        return children[index]->remove(data);
+    }
+
+    // TODO: Talvez rever esse caso
+    // se o nó atual não está cheio
+    if (info.size() < children.size() - 1) {
+        std::rotate(it, it + 1, info.end()); // desloca todos para a direita
+        info.pop_back(); // remove o último
+        return true;
+    }
+
+    int substitute = -1;
+
+    // checa antes
+    for (int i=index; i >= 0; i--) {
+        
+    }    
+}
+
 
 #endif

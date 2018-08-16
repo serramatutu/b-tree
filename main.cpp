@@ -13,23 +13,21 @@ int main() {
     
     while (true) {
         string s;
-        cout << "digite um valor inteiro a ser inserido na árvore ou 'sair'" << endl;
-        cin >> s;
+        cout << "op num | s" << endl;
 
         int num;
-        try {
-            num = stoi(s);
-        }
-        catch (invalid_argument e) {
-            if (s != "sair") {
-                cout << "digite um valor inteiro válido" << endl;
-                continue;
-            }
-            else
-                return 0;
-        }
+        char op;
+        cin >> op;
+        if (op == 's')
+            return 0;
 
-        t.insert(num);
+        cin >> num;
+        if (op == 'i')
+            t.insert(num);
+        else if (op == 'r')
+            t.remove(num);
+        else
+            cout << "Digite uma operação válida" << endl;
         cout << t << endl;
     }
 }

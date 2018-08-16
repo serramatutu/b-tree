@@ -7,7 +7,13 @@
         "deque": "cpp",
         "forward_list": "cpp",
         "unordered_map": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "iosfwd": "cpp",
+        "xhash": "cpp",
+        "xstring": "cpp",
+        "xutility": "cpp",
+        "list": "cpp",
+        "type_traits": "cpp"
     },
     "code-runner.executorMap": {
         "cpp": "cd $dir && g++ $fileName -o $fileNameWithoutExt --std=c++11 && $dir$fileNameWithoutExt",
