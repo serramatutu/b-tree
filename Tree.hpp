@@ -169,10 +169,12 @@ T& Tree<T>::removeAt(unsigned int index) {
     }
 
     // checa antes
-    for (unsigned int i=index; i >= 0; i--) {
+    for (int i=index; i >= 0; i--) {
         if (children[i] != nullptr) {
             // desloca para a direita
-            std::rotate(info.begin() + i,  info.begin() + i + 1, currentIterator);
+            std::rotate(info.begin() + i, 
+                        info.begin() + i + 1, 
+                        currentIterator);
             info[i] = children[i]->popMax();
             if (children[i]->empty())
                 removeChild(i);
@@ -182,10 +184,18 @@ T& Tree<T>::removeAt(unsigned int index) {
     }
 
     // checa depois
-    for (unsigned int i=index; i < children.size(); i++) {
+    for (int i=index; i + 1 < children.size(); i++) {
         if (children[i+1] != nullptr) {
             // desloca para a esquerda
-            std::rotate(info.begin() + i, info.begin() + i - 1, currentIterator);
+            int ri = info.size() - i - 1; // reverse index
+            std::cout <<"b"<< *(info.rbegin() + ri) << std::endl;
+            std::cout <<"m"<< *(info.rbegin() + ri + 1) << std::endl;
+            std::cout <<"e"<< *(info.rbegin() + (info.size() - index - 1)) << std::endl;
+            
+            // TODO: problema aqui
+            std::rotate(info.rbegin() + ri, 
+                        info.rbegin() + ri + 1, 
+                        info.rbegin() + (info.size() - index - 1));
             info[i] = children[i+1]->popMin();
             if (children[i+1]->empty()) 
                 removeChild(i + 1);
@@ -203,7 +213,10 @@ bool Tree<T>::remove(const T& data) {
     if (*it != data) {
         if (children[index] == nullptr) // não está nas filhas
             return false;
-        return children[index]->remove(data);
+        bool ret = children[index]->remove(data);
+        if (children[index]->empty())
+            removeChild(index);
+        return ret;
     }
 
     removeAt(index);
