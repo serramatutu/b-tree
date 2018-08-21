@@ -1,11 +1,9 @@
 #ifndef TREE_HPP
 #define TREE_HPP
 
-// usados pela definição
 #include <iostream>
 #include <vector>
 
-// usados pela implementação
 #include <algorithm>
 #include <utility>
 #include <stdexcept>
@@ -39,9 +37,9 @@ class Tree {
         T& popMin();
         T& popMax();
 
-        bool empty();
-        bool full();
-        bool leaf();
+        bool empty() const;
+        bool full() const;
+        bool leaf() const;
 
         template <typename U> friend std::ostream& operator<<(std::ostream& os, const Tree<U>& t);
 };
@@ -94,13 +92,13 @@ template <typename T>
 std::ostream& operator<<(std::ostream& os, const Tree<T>& t) {
     os << "(";
     for (unsigned int i=0; i<t.info.size(); i++) {
-        if (t.children[i] != nullptr) // printa a esquerda
+        if (t.children[i] != nullptr) // prints left
             os << *t.children[i];
 
-        os << " " << t.info[i] << " "; // printa o valor
+        os << " " << t.info[i] << " ";
     }
 
-    if (t.children.back() != nullptr) // printa a direita do ultimo
+    if (t.children.back() != nullptr) // prints last's right
         os << *t.children.back();
 
     os << ")";
@@ -108,17 +106,17 @@ std::ostream& operator<<(std::ostream& os, const Tree<T>& t) {
 }
 
 template <typename T>
-bool Tree<T>::full() {
+bool Tree<T>::full() const {
     return info.size() >= children.size() - 1;
 }
 
 template <typename T>
-bool Tree<T>::empty() {
+bool Tree<T>::empty() const {
     return info.size() <= 0;
 }
 
 template <typename T>
-bool Tree<T>::leaf() {
+bool Tree<T>::leaf() const {
     return childrenCount <= 0;
 }
 
@@ -160,21 +158,22 @@ void Tree<T>::insert(T data) {
 template <typename T>
 T& Tree<T>::removeAt(unsigned int index) {
     auto currentIterator = info.begin() + index;
+    unsigned int reverseIndex = info.size() - index - 1;
     T& ret = info[index];
 
     if (leaf()) {
-        std::rotate(currentIterator, currentIterator + 1, info.end()); // desloca todos para a direita
-        info.pop_back(); // remove o último
+        std::rotate(currentIterator, currentIterator + 1, info.end()); // shifts right
+        info.pop_back();
         return ret;
     }
 
-    // checa antes
+    // searches before
     for (int i=index; i >= 0; i--) {
         if (children[i] != nullptr) {
-            // desloca para a direita
-            std::rotate(info.begin() + i, 
-                        info.begin() + i + 1, 
-                        currentIterator);
+            // shift right
+            std::rotate(info.begin() + i,
+                        info.begin() + index,
+                        info.begin() + index + 1);
             info[i] = children[i]->popMax();
             if (children[i]->empty())
                 removeChild(i);
@@ -183,19 +182,13 @@ T& Tree<T>::removeAt(unsigned int index) {
         }
     }
 
-    // checa depois
+    // searches after
     for (int i=index; i + 1 < children.size(); i++) {
         if (children[i+1] != nullptr) {
-            // desloca para a esquerda
-            int ri = info.size() - i - 1; // reverse index
-            std::cout <<"b"<< *(info.rbegin() + ri) << std::endl;
-            std::cout <<"m"<< *(info.rbegin() + ri + 1) << std::endl;
-            std::cout <<"e"<< *(info.rbegin() + (info.size() - index - 1)) << std::endl;
-            
-            // TODO: problema aqui
-            std::rotate(info.rbegin() + ri, 
-                        info.rbegin() + ri + 1, 
-                        info.rbegin() + (info.size() - index - 1));
+            // shift left
+            std::rotate(info.rbegin() + info.size() - i - 1, // reverse i 
+                        info.rbegin() + reverseIndex, 
+                        info.rbegin() + reverseIndex + 1);
             info[i] = children[i+1]->popMin();
             if (children[i+1]->empty()) 
                 removeChild(i + 1);
@@ -209,9 +202,9 @@ template <typename T>
 bool Tree<T>::remove(const T& data) {
     auto it = getIterator(data);
     int index = it - info.begin();
-    // se não encontrou na árvore atual
+    // not in current ctree
     if (*it != data) {
-        if (children[index] == nullptr) // não está nas filhas
+        if (children[index] == nullptr) // not in children either
             return false;
         bool ret = children[index]->remove(data);
         if (children[index]->empty())

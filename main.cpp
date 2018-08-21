@@ -7,18 +7,18 @@ using namespace std;
 
 int main() {
     int n;
-    cout << "digite o tamanho de cada nó da árvore" << endl;
+    cout << "tree size: ";
     cin >> n;
     Tree<int> t(n);
     
     while (true) {
         string s;
-        cout << "op num | s" << endl;
+        cout << "op num | e" << endl;
 
         int num;
         char op;
         cin >> op;
-        if (op == 's')
+        if (op == 'e')
             return 0;
 
         cin >> num;
@@ -27,7 +27,7 @@ int main() {
         else if (op == 'r')
             t.remove(num);
         else
-            cout << "Digite uma operação válida" << endl;
+            cout << "type in a valid operation" << endl;
         cout << t << endl;
     }
 }
