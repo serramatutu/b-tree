@@ -20,7 +20,7 @@ class Tree {
         void addChild(unsigned int i);
         void removeChild(unsigned int i);
 
-        T& removeAt(unsigned int i);
+        T removeAt(unsigned int i);
 
     public:
         Tree(unsigned int n);
@@ -34,8 +34,8 @@ class Tree {
         void insert(T data);
         bool remove(const T& data);
 
-        T& popMin();
-        T& popMax();
+        T popMin();
+        T popMax();
 
         bool empty() const;
         bool full() const;
@@ -156,10 +156,10 @@ void Tree<T>::insert(T data) {
 }
 
 template <typename T>
-T& Tree<T>::removeAt(unsigned int index) {
+T Tree<T>::removeAt(unsigned int index) {
     auto currentIterator = info.begin() + index;
     unsigned int reverseIndex = info.size() - index - 1;
-    T& ret = info[index];
+    T ret(info[index]);
 
     if (leaf()) {
         std::rotate(currentIterator, currentIterator + 1, info.end()); // shifts right
@@ -217,12 +217,12 @@ bool Tree<T>::remove(const T& data) {
 }
 
 template <typename T>
-T& Tree<T>::popMax() {
+T Tree<T>::popMax() {
     if (children.back() != nullptr) 
         return children.back()->popMax();
 
     if (leaf()) {
-        T& ret = info.back();
+        T ret(info.back());
         info.pop_back();
         return ret;
     }
@@ -231,12 +231,12 @@ T& Tree<T>::popMax() {
 }
 
 template <typename T>
-T& Tree<T>::popMin() {
+T Tree<T>::popMin() {
     if (children.front() != nullptr)
         return children.front()->popMin();
 
     if (leaf()) {
-        T& ret = info.front();
+        T ret(info.front());
         info.erase(info.begin());
         return ret;
     }
