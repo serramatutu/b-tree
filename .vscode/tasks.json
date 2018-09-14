@@ -4,11 +4,11 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build main debug",
+            "label": "build file debug",
             "type": "shell",
             "command": "g++",
             "args": [
-                "-g", "-o", "./bin/a.out", "--std=c++11", "main.cpp"
+                "-g", "-o", "./bin/a.out", "--std=c++11", "${file}"
             ],
             "group": {
                 "kind": "build",
@@ -16,11 +16,11 @@
             }
         },
         {
-            "label": "build main clean",
+            "label": "build file clean",
             "type": "shell",
             "command": "g++",
             "args": [
-                "-o", "./bin/a.out", "--std=c++11", "main.cpp"
+                "-o", "./bin/a.out", "--std=c++11", "${file}"
             ],
             "group": "build"
         }
