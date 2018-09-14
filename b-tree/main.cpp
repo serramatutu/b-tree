@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 
-#include "Tree.hpp"
+#include "BTree.hpp"
 
 using namespace std;
 
@@ -9,7 +9,7 @@ int main() {
     int n;
     cout << "tree size: ";
     cin >> n;
-    Tree<int> t(n);
+    BTree<int> t(n);
     
     while (true) {
         string s;

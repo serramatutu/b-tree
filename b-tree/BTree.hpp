@@ -1,5 +1,5 @@
-#ifndef TREE_HPP
-#define TREE_HPP
+#ifndef BTree_HPP
+#define BTree_HPP
 
 #include <iostream>
 #include <vector>
@@ -9,11 +9,11 @@
 #include <stdexcept>
 
 template <typename T>
-class Tree {
+class BTree {
     private:
         unsigned int childrenCount;
         std::vector<T> info;
-        std::vector<Tree*> children;
+        std::vector<BTree*> children;
 
         typename std::vector<T>::iterator getIterator(const T& data);
 
@@ -23,13 +23,13 @@ class Tree {
         T removeAt(unsigned int i);
 
     public:
-        Tree(unsigned int n);
-        ~Tree();
+        BTree(unsigned int n);
+        ~BTree();
 
-        Tree(const Tree& other);
-        Tree<T>& operator= (Tree other);
+        BTree(const BTree& other);
+        BTree<T>& operator= (BTree other);
         
-        Tree(Tree&& other);
+        BTree(BTree&& other);
 
         void insert(T data);
         bool remove(const T& data);
@@ -41,20 +41,20 @@ class Tree {
         bool full() const;
         bool leaf() const;
 
-        template <typename U> friend std::ostream& operator<<(std::ostream& os, const Tree<U>& t);
+        template <typename U> friend std::ostream& operator<<(std::ostream& os, const BTree<U>& t);
 };
 
 template <typename T>
-Tree<T>::Tree(unsigned int n) : childrenCount(0) {
+BTree<T>::BTree(unsigned int n) : childrenCount(0) {
     if (n < 1)
-        throw std::invalid_argument("Invalid tree node size");
+        throw std::invalid_argument("Invalid BTree node size");
 
     info.reserve(n);
     children.resize(n+1, nullptr);
 }
 
 template <typename T>
-Tree<T>::~Tree() {
+BTree<T>::~BTree() {
     for (auto it = children.begin(); it != children.end(); it++) {
         if (*it != nullptr) {
             delete *it;
@@ -64,17 +64,17 @@ Tree<T>::~Tree() {
 }
 
 template <typename T>
-Tree<T>::Tree(const Tree& other) : info(other.info), childrenCount(other.childrenCount) {
+BTree<T>::BTree(const BTree& other) : info(other.info), childrenCount(other.childrenCount) {
     children.resize(other.children.size());
     for (int i=0; i<other.children.size(); i++) {
-        Tree* current = other.children[i];
+        BTree* current = other.children[i];
         if (current != nullptr)
-            children[i] = new Tree(*current);
+            children[i] = new BTree(*current);
     }
 }
 
 template <typename T>
-Tree<T>& Tree<T>::operator=(Tree other) {
+BTree<T>& BTree<T>::operator=(BTree other) {
     std::swap(childrenCount, other.childrenCount);
     std::swap(info, other.info);
     std::swap(children, other.children);
@@ -82,14 +82,14 @@ Tree<T>& Tree<T>::operator=(Tree other) {
 }
 
 template <typename T>
-Tree<T>::Tree(Tree&& other) 
+BTree<T>::BTree(BTree&& other) 
     : info(std::move(other.info)), 
       children(std::move(other.children)),
       childrenCount(std::move(childrenCount))
     {}
 
 template <typename T>
-std::ostream& operator<<(std::ostream& os, const Tree<T>& t) {
+std::ostream& operator<<(std::ostream& os, const BTree<T>& t) {
     os << "(";
     for (unsigned int i=0; i<t.info.size(); i++) {
         if (t.children[i] != nullptr) // prints left
@@ -106,35 +106,35 @@ std::ostream& operator<<(std::ostream& os, const Tree<T>& t) {
 }
 
 template <typename T>
-bool Tree<T>::full() const {
+bool BTree<T>::full() const {
     return info.size() >= children.size() - 1;
 }
 
 template <typename T>
-bool Tree<T>::empty() const {
+bool BTree<T>::empty() const {
     return info.size() <= 0;
 }
 
 template <typename T>
-bool Tree<T>::leaf() const {
+bool BTree<T>::leaf() const {
     return childrenCount <= 0;
 }
 
 template <typename T>
-void Tree<T>::addChild(unsigned int i) {
-    children[i] = new Tree(children.size() - 1);
+void BTree<T>::addChild(unsigned int i) {
+    children[i] = new BTree(children.size() - 1);
     childrenCount++;
 }
 
 template <typename T>
-void Tree<T>::removeChild(unsigned int i) {
+void BTree<T>::removeChild(unsigned int i) {
     delete children[i];
     children[i] = nullptr;
     childrenCount--;
 }
 
 template <typename T>
-typename std::vector<T>::iterator Tree<T>::getIterator(const T& data) {
+typename std::vector<T>::iterator BTree<T>::getIterator(const T& data) {
     auto it = info.begin();
     while (it != info.end() && *it < data)
         it++;
@@ -142,7 +142,7 @@ typename std::vector<T>::iterator Tree<T>::getIterator(const T& data) {
 }
 
 template <typename T>
-void Tree<T>::insert(T data) {
+void BTree<T>::insert(T data) {
     auto it = getIterator(data);
     if (full()) {
         int index = it - info.begin();
@@ -156,7 +156,7 @@ void Tree<T>::insert(T data) {
 }
 
 template <typename T>
-T Tree<T>::removeAt(unsigned int index) {
+T BTree<T>::removeAt(unsigned int index) {
     auto currentIterator = info.begin() + index;
     unsigned int reverseIndex = info.size() - index - 1;
     T ret(info[index]);
@@ -199,10 +199,10 @@ T Tree<T>::removeAt(unsigned int index) {
 }
 
 template <typename T>
-bool Tree<T>::remove(const T& data) {
+bool BTree<T>::remove(const T& data) {
     auto it = getIterator(data);
     int index = it - info.begin();
-    // not in current ctree
+    // not in current cBTree
     if (*it != data) {
         if (children[index] == nullptr) // not in children either
             return false;
@@ -217,7 +217,7 @@ bool Tree<T>::remove(const T& data) {
 }
 
 template <typename T>
-T Tree<T>::popMax() {
+T BTree<T>::popMax() {
     if (children.back() != nullptr) 
         return children.back()->popMax();
 
@@ -231,7 +231,7 @@ T Tree<T>::popMax() {
 }
 
 template <typename T>
-T Tree<T>::popMin() {
+T BTree<T>::popMin() {
     if (children.front() != nullptr)
         return children.front()->popMin();
 
