@@ -24,7 +24,7 @@ class BTree {
 
     public:
         BTree(unsigned int n);
-        ~BTree();
+        virtual ~BTree();
 
         BTree(const BTree& other);
         BTree<T>& operator= (BTree other);
@@ -54,7 +54,7 @@ BTree<T>::BTree(unsigned int n) : childrenCount(0) {
 }
 
 template <typename T>
-BTree<T>::~BTree() {
+virtual BTree<T>::~BTree() {
     for (auto it = children.begin(); it != children.end(); it++) {
         if (*it != nullptr) {
             delete *it;
