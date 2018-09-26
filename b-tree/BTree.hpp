@@ -54,7 +54,7 @@ BTree<T>::BTree(unsigned int n) : childrenCount(0) {
 }
 
 template <typename T>
-virtual BTree<T>::~BTree() {
+BTree<T>::~BTree() {
     for (auto it = children.begin(); it != children.end(); it++) {
         if (*it != nullptr) {
             delete *it;

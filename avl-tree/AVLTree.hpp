@@ -1,106 +1,79 @@
+#ifndef AVL_TREE
+#define AVL_TREE
+
 #include <iostream>
+#include "AVLTreeNode.hpp"
 
 template <typename T>
 class AVLTree {
     private:
-        AVLTree<T>* left;
-        AVLTree<T>* right;
-        T data;
-
-        int lastHeight; // the last calculated height
-
-        void insert(const T& data, AVLTree<T>** pptr);
+        AVLTreeNode<T>* root;
 
     public:
-        AVLTree(const T& data);
+        AVLTree();
         virtual ~AVLTree();
         AVLTree(const AVLTree& other);
-        AVLTree<T>& operator= (AVLTree other);
+        AVLTree<T>& operator= (AVLTree<T> other);
         AVLTree(AVLTree&& other);
 
-        int height();
-        int balanceFactor();
-
         void insert(const T& data);
+
+        int height();
 
         template <typename U>
         friend std::ostream& operator<<(std::ostream& os, const AVLTree<U>& t);
 };
 
 template <typename T>
-AVLTree<T>::AVLTree(const T& data) : left(nullptr), right(nullptr), data(data), lastHeight(1) 
-{}
+AVLTree<T>::AVLTree() : root(nullptr) {}
 
 template <typename T>
 AVLTree<T>::~AVLTree() {
-    delete right;
-    right = nullptr;
-    delete left;
-    left = nullptr;
+    delete root;
+    root = nullptr;
 }
 
 template <typename T>
-AVLTree<T>::AVLTree(const AVLTree& other) : data(other.data) {
-    right = new AVLTree(other->right);
-    left = new AVLTree(other->left);
-}
+AVLTree<T>::AVLTree(const AVLTree& other) {
+    if (other.root != nullptr)
+        root = new AVLTreeNode<T>(other->root);
+};
 
 template <typename T>
-AVLTree<T>& AVLTree<T>::operator=(AVLTree other) {
-    std::swap(data, other.data);
-    std::swap(right, other.right);
-    std::swap(left, other.left);
+AVLTree<T>& AVLTree<T>::operator=(AVLTree<T> other) {
+    std::swap(root, other.root);
+
     return *this;
 }
 
 template <typename T>
-AVLTree<T>::AVLTree(AVLTree&& other)
-    : right(std::move(other.right)),
-      left(std::move(other.left)),
-      data(std::move(other.data))
-      {}
+AVLTree<T>::AVLTree(AVLTree&& other) : root(std::move(other.root)) {}
 
 template <typename T>
 void AVLTree<T>::insert(const T& data) {
-    if (data < this->data)
-        insert(data, &right);
-    else
-        insert(data, &left);
-}
-
-template <typename T>
-void AVLTree<T>::insert(const T& data, AVLTree<T>** pptr) {
-    if (*pptr == nullptr)
-        *pptr = new AVLTree(data);
-    else
-        (*pptr)->insert(data);
-
-    // recalculates the height at this node
-    int newHeight = (*pptr)->height() + 1;
-    if (newHeight > lastHeight)
-        lastHeight = newHeight;
-}
-
-template <typename T>
-std::ostream& operator<<(std::ostream& os, const AVLTree<T>& t) {
-    if (t.right != nullptr)
-        os << *t.right;
-    os << " (" << t.data << ") ";
-    if (t.left != nullptr)
-        os << *t.left;
-
-    return os;
+    if (root == nullptr)
+        root = new AVLTreeNode<T>(data);
+    else {
+        root->insert(data);
+        root = &balance(*root);
+    }
 }
 
 template <typename T>
 int AVLTree<T>::height() {
-    return lastHeight;
+    if (root == nullptr)
+        return 0;
+    return root->height();    
 }
 
 template <typename T>
-int AVLTree<T>::balanceFactor() {
-    int l = left == nullptr ? 0 : left->height(),
-        r = right == nullptr ? 0 : right->height();
+std::ostream& operator<<(std::ostream& os, const AVLTree<T>& t) {
+    os << "[";
+    if (t.root != nullptr)
+        os << *t.root;
+    os << "]";
 
-    return l - r;
+    return os;
 }
+
+#endif

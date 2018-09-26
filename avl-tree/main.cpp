@@ -6,7 +6,7 @@
 using namespace std;
 
 int main() {
-    AVLTree<int> t(0);
+    AVLTree<int> t;
     
     while (true) {
         string s;
@@ -26,6 +26,6 @@ int main() {
         else
             cout << "type in a valid operation" << endl;
         cout << t << endl;
-        cout << t.height() << endl;
+        cout << "height: " << t.height() << endl;
     }
 }
