@@ -54,6 +54,8 @@ AVLTreeNode<T>::~AVLTreeNode() {
     right = nullptr;
     delete left;
     left = nullptr;
+    delete data;
+    data = nullptr;
 }
 
 template <typename T>
