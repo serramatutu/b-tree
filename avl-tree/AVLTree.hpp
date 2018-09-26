@@ -55,7 +55,7 @@ void AVLTree<T>::insert(const T& data) {
         root = new AVLTreeNode<T>(data);
     else {
         root->insert(data);
-        root = &balance(*root);
+        root = &AVLTreeNode<T>::balance(*root);
     }
 }
 

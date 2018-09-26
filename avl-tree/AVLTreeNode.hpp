@@ -34,14 +34,10 @@ class AVLTreeNode {
     template <typename U>
     friend std::ostream& operator<<(std::ostream& os, const AVLTreeNode<U>& t);
 
-    template <typename U>
-    friend AVLTreeNode<U>& balance(AVLTreeNode<U>& root);
-
-    template <typename U>
-    friend AVLTreeNode<U>& rRotate(AVLTreeNode<U>& root);
-
-    template <typename U>
-    friend AVLTreeNode<U>& lRotate(AVLTreeNode<U>& root);
+    
+    static AVLTreeNode<T>& balance(AVLTreeNode<T>& root);
+    static AVLTreeNode<T>& rRotate(AVLTreeNode<T>& root);
+    static AVLTreeNode<T>& lRotate(AVLTreeNode<T>& root);
 };
 
 template <typename T>
@@ -150,16 +146,16 @@ bool AVLTreeNode<T>::balanced() {
 }
 
 template <typename T>
-AVLTreeNode<T>& balance(AVLTreeNode<T>& root) {
+AVLTreeNode<T>& AVLTreeNode<T>::balance(AVLTreeNode<T>& root) {
     int balanceFactor = root.balanceFactor();
     if (balanceFactor > 1) { // right-heavy
         if (root.right->balanceFactor() <= -1) // RL case
-            root.right = &rRotate(*root.right);
+            root.right = &AVLTreeNode<T>::rRotate(*root.right);
         return lRotate(root);
     }
     else if (balanceFactor < -1) { // left-heavy
         if (root.left->balanceFactor() >= 1 ) // LR case
-            root.left = &lRotate(*root.left);
+            root.left = &AVLTreeNode<T>::lRotate(*root.left);
         return rRotate(root);
     }
 
@@ -167,7 +163,7 @@ AVLTreeNode<T>& balance(AVLTreeNode<T>& root) {
 }
 
 template <typename T>
-AVLTreeNode<T>& rRotate(AVLTreeNode<T>& root) {
+AVLTreeNode<T>& AVLTreeNode<T>::rRotate(AVLTreeNode<T>& root) {
     AVLTreeNode<T>& newRoot = *root.left;
     root.left = newRoot.right;
     newRoot.right = &root;
@@ -179,7 +175,7 @@ AVLTreeNode<T>& rRotate(AVLTreeNode<T>& root) {
 }
 
 template <typename T>
-AVLTreeNode<T>& lRotate(AVLTreeNode<T>& root) {
+AVLTreeNode<T>& AVLTreeNode<T>::lRotate(AVLTreeNode<T>& root) {
     AVLTreeNode<T>& newRoot = *root.right;
     root.right = newRoot.left;
     newRoot.left = &root;
