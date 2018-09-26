@@ -9,7 +9,7 @@ class AVLTreeNode {
     private:
         AVLTreeNode<T>* left;
         AVLTreeNode<T>* right;
-        T data;
+        T* data;
 
         int lastHeight; // the last calculated height
         int lheight();
@@ -45,7 +45,7 @@ class AVLTreeNode {
 };
 
 template <typename T>
-AVLTreeNode<T>::AVLTreeNode(const T& data) : left(nullptr), right(nullptr), data(data), lastHeight(1) 
+AVLTreeNode<T>::AVLTreeNode(const T& data) : left(nullptr), right(nullptr), data(new T(data)), lastHeight(1) 
 {}
 
 template <typename T>
@@ -57,7 +57,7 @@ AVLTreeNode<T>::~AVLTreeNode() {
 }
 
 template <typename T>
-AVLTreeNode<T>::AVLTreeNode(const AVLTreeNode& other) : data(other.data) {
+AVLTreeNode<T>::AVLTreeNode(const AVLTreeNode& other) : data(new T(other.data)) {
     if (other.right != nullptr)
         right = new AVLTreeNode(other->right);
     if (other.left != nullptr)
@@ -81,7 +81,7 @@ AVLTreeNode<T>::AVLTreeNode(AVLTreeNode&& other)
 
 template <typename T>
 void AVLTreeNode<T>::insert(const T& data) {
-    if (data < this->data)
+    if (data < *this->data)
         insert(data, right);
     else
         insert(data, left);
@@ -107,7 +107,7 @@ std::ostream& operator<<(std::ostream& os, const AVLTreeNode<T>& t) {
     os << "(";
     if (t.right != nullptr)
         os << *t.right;
-    os << t.data;
+    os << *t.data;
     if (t.left != nullptr)
         os << *t.left;
     os << ")";
