@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <algorithm>
 
 template <typename T>
 class AVLTreeNode {
@@ -17,6 +18,10 @@ class AVLTreeNode {
 
         int balanceFactor();
 
+        void balance();
+        void rRotate();
+        void lRotate();
+
         void insert(const T& data, AVLTreeNode<T>*& pptr);
         AVLTreeNode<T>& removeHighestLeaf();
 
@@ -27,6 +32,7 @@ class AVLTreeNode {
         AVLTreeNode<T>& operator= (AVLTreeNode<T> other);
         AVLTreeNode(AVLTreeNode&& other);
 
+        // Note: does NOT pop from itself if the data is in itself
         T& popMin();
         T& popMax();
 
@@ -41,11 +47,16 @@ class AVLTreeNode {
     template <typename U>
     friend std::ostream& operator<<(std::ostream& os, const AVLTreeNode<U>& t);
 
-    
-    static AVLTreeNode<T>& balance(AVLTreeNode<T>& root);
-    static AVLTreeNode<T>& rRotate(AVLTreeNode<T>& root);
-    static AVLTreeNode<T>& lRotate(AVLTreeNode<T>& root);
+    template <typename U>
+    friend void swap(AVLTreeNode<U>& a, AVLTreeNode<U>& b);
 };
+
+template <typename T>
+void swap(AVLTreeNode<T>& a, AVLTreeNode<T>& b) {
+    std::swap(a.data, b.data);
+    std::swap(a.right, b.right);
+    std::swap(a.left, b.left);
+}
 
 template <typename T>
 AVLTreeNode<T>::AVLTreeNode(const T& data) : left(nullptr), right(nullptr), data(*new T(data)), lastHeight(1) 
@@ -69,9 +80,7 @@ AVLTreeNode<T>::AVLTreeNode(const AVLTreeNode& other) : data(new T(other.data)) 
 
 template <typename T>
 AVLTreeNode<T>& AVLTreeNode<T>::operator=(AVLTreeNode<T> other) {
-    std::swap(data, other.data);
-    std::swap(right, other.right);
-    std::swap(left, other.left);
+    swap(*this, other);
     return *this;
 }
 
@@ -88,16 +97,16 @@ void AVLTreeNode<T>::insert(const T& data) {
         insert(data, left);
     else
         insert(data, right);
+
+    balance();
 }
 
 template <typename T>
 void AVLTreeNode<T>::insert(const T& data, AVLTreeNode<T>*& ptr) {
     if (ptr == nullptr)
         ptr = new AVLTreeNode(data);
-    else {
+    else
         ptr->insert(data);
-        ptr = &balance(*ptr);
-    }
 
     // recalculates the height at this node
     unsigned int newHeight = ptr->height() + 1;
@@ -108,25 +117,23 @@ void AVLTreeNode<T>::insert(const T& data, AVLTreeNode<T>*& ptr) {
 template <typename T>
 bool AVLTreeNode<T>::remove(const T& data) {
     if (data > this.data) {
-        if (right != nullptr) {
-            if (right->data != data)
-                return right->remove(data);
+        if (right == nullptr)
+            return false;
 
-            // if (right->isLeaf()) {
-            //     delete right;
-            //     right = nullptr;
-            // }
-            // else
-            //     right->data = right->popMin();
-        }
+        if (right->data != data)
+            return right->remove(data);
+
+        right->data = right->popMin();
+        return true;
     }
     else if (data < this.data) {
-        if (left != nullptr) {
-            if (*left->data != data)
-                return left->remove(data);
+        if (left == nullptr)
+            return false;
+        if (*left->data != data)
+            return left->remove(data);
 
-            
-        }
+        left->data = left->popMax();
+        return true;
     }
     
     return false;
@@ -193,58 +200,40 @@ bool AVLTreeNode<T>::isLeaf() {
 }
 
 template <typename T>
-AVLTreeNode<T>& AVLTreeNode<T>::balance(AVLTreeNode<T>& root) {
-    int balanceFactor = root.balanceFactor();
+void AVLTreeNode<T>::balance() {
+    int balanceFactor = this->balanceFactor();
     if (balanceFactor > 1) { // right-heavy
-        if (root.right->balanceFactor() <= -1) // RL case
-            root.right = &AVLTreeNode<T>::rRotate(*root.right);
-        return lRotate(root);
+        if (right->balanceFactor() <= -1) // RL case
+            right->rRotate();
+        lRotate();
     }
     else if (balanceFactor < -1) { // left-heavy
-        if (root.left->balanceFactor() >= 1 ) // LR case
-            root.left = &AVLTreeNode<T>::lRotate(*root.left);
-        return rRotate(root);
+        if (left->balanceFactor() >= 1 ) // LR case
+            left->lRotate();
+        rRotate();
     }
-
-    return root; // in case the tree is already balanced
 }
 
 template <typename T>
-AVLTreeNode<T>& AVLTreeNode<T>::rRotate(AVLTreeNode<T>& root) {
-    AVLTreeNode<T>& newRoot = *root.left;
-    root.left = newRoot.right;
-    newRoot.right = &root;
+void AVLTreeNode<T>::rRotate() {
+    AVLTreeNode<T>& newRoot = *left;
+    left = newRoot.right;
+    swap(*this, newRoot);
+    right = &newRoot;
 
-    if (root.lHeight() > root.rHeight())
-        root.lastHeight = root.lHeight() + 1;
-    else
-        root.lastHeight = root.rHeight() + 1;
-
-    if (newRoot.lHeight() > newRoot.rHeight())
-        newRoot.lastHeight = newRoot.lHeight() + 1;
-    else
-        newRoot.lastHeight = newRoot.rHeight() + 1;
-
-    return newRoot;
+    newRoot.lastHeight = std::max(newRoot.lHeight(), newRoot.rHeight()) + 1;
+    lastHeight = std::max(lHeight(), rHeight()) + 1;
 }
 
 template <typename T>
-AVLTreeNode<T>& AVLTreeNode<T>::lRotate(AVLTreeNode<T>& root) {
-    AVLTreeNode<T>& newRoot = *root.right;
-    root.right = newRoot.left;
-    newRoot.left = &root;
+void AVLTreeNode<T>::lRotate() {
+    AVLTreeNode<T>& newRoot = *right;
+    right = newRoot.left;
+    swap(*this, newRoot);
+    left = &newRoot;
 
-    if (root.lHeight() > root.rHeight())
-        root.lastHeight = root.lHeight() + 1;
-    else
-        root.lastHeight = root.rHeight() + 1;
-
-    if (newRoot.lHeight() > newRoot.rHeight())
-        newRoot.lastHeight = newRoot.lHeight() + 1;
-    else
-        newRoot.lastHeight = newRoot.rHeight() + 1;
-
-    return newRoot;
+    newRoot.lastHeight = std::max(newRoot.lHeight(), newRoot.rHeight()) + 1;
+    lastHeight = std::max(lHeight(), rHeight()) + 1;
 }
 
 #endif

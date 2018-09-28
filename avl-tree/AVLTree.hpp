@@ -56,7 +56,6 @@ void AVLTree<T>::insert(const T& data) {
         root = new AVLTreeNode<T>(data);
     else {
         root->insert(data);
-        root = &AVLTreeNode<T>::balance(*root);
     }
 }
 
@@ -64,20 +63,14 @@ template <typename T>
 bool AVLTree<T>::remove(const T& data) {
     if (root == nullptr)
         return false;
-    else {
-        bool removed = root->remove(data);
-        if (removed)
-            root = &AVLTreeNode<T>::balance(*root);
-
-        return removed;
-    }
+    return root->remove(data);
 }
 
 template <typename T>
 int AVLTree<T>::height() {
     if (root == nullptr)
         return 0;
-    return root->height();    
+    return root->height(); 
 }
 
 template <typename T>
