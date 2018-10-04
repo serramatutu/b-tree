@@ -53,7 +53,7 @@ AVLTree<T>::AVLTree(AVLTree&& other) : root(std::move(other.root)) {}
 template <typename T>
 void AVLTree<T>::insert(const T& data) {
     if (root == nullptr)
-        root = new AVLTreeNode<T>(data);
+        root = new AVLTreeNode<T>(data, root);
     else
         root->insert(data);
 }
@@ -62,7 +62,7 @@ template <typename T>
 bool AVLTree<T>::remove(const T& data) {
     if (root == nullptr)
         return false;
-    return root->remove(data, root);
+    return root->remove(data);
 }
 
 template <typename T>
