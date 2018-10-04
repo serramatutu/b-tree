@@ -10,8 +10,9 @@ class AVLTreeNode {
     private:
         AVLTreeNode<T>* left;
         AVLTreeNode<T>* right;
-        T& data;
+        T data;
 
+        bool heightValid;
         unsigned int lastHeight; // the last calculated height
         unsigned int lHeight();
         unsigned int rHeight();
@@ -23,7 +24,9 @@ class AVLTreeNode {
         void lRotate();
 
         void insert(const T& data, AVLTreeNode<T>*& pptr);
-        AVLTreeNode<T>& removeHighestLeaf();
+
+        static AVLTreeNode<T>*& findMinPtr(AVLTreeNode<T>*& ptr);
+        static AVLTreeNode<T>*& findMaxPtr(AVLTreeNode<T>*& ptr);
 
     public:
         AVLTreeNode(const T& data);
@@ -32,17 +35,13 @@ class AVLTreeNode {
         AVLTreeNode<T>& operator= (AVLTreeNode<T> other);
         AVLTreeNode(AVLTreeNode&& other);
 
-        // Note: does NOT pop from itself if the data is in itself
-        T& popMin();
-        T& popMax();
-
         bool isLeaf();
 
         unsigned int height();
         bool balanced();
 
         void insert(const T& data);
-        bool remove (const T& data);
+        bool remove (const T& data, AVLTreeNode<T>*& parentPtr);
 
     template <typename U>
     friend std::ostream& operator<<(std::ostream& os, const AVLTreeNode<U>& t);
@@ -53,13 +52,19 @@ class AVLTreeNode {
 
 template <typename T>
 void swap(AVLTreeNode<T>& a, AVLTreeNode<T>& b) {
+    std::swap(a.heightValid, b.heightValid);
+    std::swap(a.lastHeight, b.lastHeight);
     std::swap(a.data, b.data);
     std::swap(a.right, b.right);
     std::swap(a.left, b.left);
 }
 
 template <typename T>
-AVLTreeNode<T>::AVLTreeNode(const T& data) : left(nullptr), right(nullptr), data(*new T(data)), lastHeight(1) 
+AVLTreeNode<T>::AVLTreeNode(const T& data) : left(nullptr), 
+                                             right(nullptr), 
+                                             data(data), 
+                                             lastHeight(1) ,
+                                             heightValid(true)
 {}
 
 template <typename T>
@@ -71,11 +76,11 @@ AVLTreeNode<T>::~AVLTreeNode() {
 }
 
 template <typename T>
-AVLTreeNode<T>::AVLTreeNode(const AVLTreeNode& other) : data(new T(other.data)) {
+AVLTreeNode<T>::AVLTreeNode(const AVLTreeNode& other) : data(other.data), heightValid(other.heightValid) {
     if (other.right != nullptr)
-        right = new AVLTreeNode(other->right);
+        right = new AVLTreeNode(*other.right);
     if (other.left != nullptr)
-        left = new AVLTreeNode(other->left);
+        left = new AVLTreeNode(*other.left);
 }
 
 template <typename T>
@@ -115,38 +120,54 @@ void AVLTreeNode<T>::insert(const T& data, AVLTreeNode<T>*& ptr) {
 }
 
 template <typename T>
-bool AVLTreeNode<T>::remove(const T& data) {
-    if (data > this.data) {
+bool AVLTreeNode<T>::remove(const T& data, AVLTreeNode<T>*& parentPtr) {
+    if (data > this->data) {
         if (right == nullptr)
             return false;
 
-        if (right->data != data)
-            return right->remove(data);
-
-        right->data = right->popMin();
-        return true;
+        return right->remove(data, this->right);
     }
-    else if (data < this.data) {
+    if (data < this->data) {
         if (left == nullptr)
             return false;
-        if (*left->data != data)
-            return left->remove(data);
-
-        left->data = left->popMax();
-        return true;
+            
+        return left->remove(data, this->left);
     }
     
-    return false;
+    if (left != nullptr && right != nullptr) {
+        AVLTreeNode<T>*& nextPtr = AVLTreeNode<T>::findMinPtr(right);
+        this->data = nextPtr->data;
+        nextPtr->remove(nextPtr->data, nextPtr);
+        balance();
+    }
+    else if (parentPtr != nullptr) {
+        if (left != nullptr)
+            parentPtr = left;
+        else
+            parentPtr = right;
+        
+        delete this;
+    }
+
+    return true;
 }
 
 template <typename T>
-T& AVLTreeNode<T>::popMin() {
-    
+AVLTreeNode<T>*& AVLTreeNode<T>::findMinPtr(AVLTreeNode<T>*& ptr) {
+    if (ptr->left != nullptr) {
+        while (ptr->left->left != nullptr)
+            ptr = ptr->left;
+    }
+    return ptr;
 }
 
 template <typename T>
-T& AVLTreeNode<T>::popMax() {
-    
+AVLTreeNode<T>*& AVLTreeNode<T>::findMaxPtr(AVLTreeNode<T>*& ptr) {
+    if (ptr->right != nullptr) {
+        while(ptr->right->right != nullptr)
+            ptr = ptr->right;
+    }
+    return ptr;
 }
 
 template <typename T>
