@@ -7,8 +7,10 @@
 #include <algorithm>
 #include <utility>
 #include <stdexcept>
+#include <functional>
 
-template <typename T>
+template <typename T, 
+          class Less = std::less<T>>
 class BTree {
     private:
         unsigned int childrenCount;
@@ -27,7 +29,7 @@ class BTree {
         virtual ~BTree();
 
         BTree(const BTree& other);
-        BTree<T>& operator= (BTree other);
+        BTree<T, Less>& operator= (BTree other);
         
         BTree(BTree&& other);
 
@@ -44,8 +46,8 @@ class BTree {
         template <typename U> friend std::ostream& operator<<(std::ostream& os, const BTree<U>& t);
 };
 
-template <typename T>
-BTree<T>::BTree(unsigned int n) : childrenCount(0) {
+template <typename T, class Less>
+BTree<T, Less>::BTree(unsigned int n) : childrenCount(0) {
     if (n < 1)
         throw std::invalid_argument("Invalid BTree node size");
 
@@ -53,8 +55,8 @@ BTree<T>::BTree(unsigned int n) : childrenCount(0) {
     children.resize(n+1, nullptr);
 }
 
-template <typename T>
-BTree<T>::~BTree() {
+template <typename T, class Less>
+BTree<T, Less>::~BTree() {
     for (auto it = children.begin(); it != children.end(); it++) {
         if (*it != nullptr) {
             delete *it;
@@ -63,8 +65,8 @@ BTree<T>::~BTree() {
     }
 }
 
-template <typename T>
-BTree<T>::BTree(const BTree& other) : info(other.info), childrenCount(other.childrenCount) {
+template <typename T, class Less>
+BTree<T, Less>::BTree(const BTree& other) : info(other.info), childrenCount(other.childrenCount) {
     children.resize(other.children.size());
     for (int i=0; i<other.children.size(); i++) {
         BTree* current = other.children[i];
@@ -73,16 +75,16 @@ BTree<T>::BTree(const BTree& other) : info(other.info), childrenCount(other.chil
     }
 }
 
-template <typename T>
-BTree<T>& BTree<T>::operator=(BTree other) {
+template <typename T, class Less>
+BTree<T, Less>& BTree<T, Less>::operator=(BTree other) {
     std::swap(childrenCount, other.childrenCount);
     std::swap(info, other.info);
     std::swap(children, other.children);
     return *this;
 }
 
-template <typename T>
-BTree<T>::BTree(BTree&& other) 
+template <typename T, class Less>
+BTree<T, Less>::BTree(BTree&& other) 
     : info(std::move(other.info)), 
       children(std::move(other.children)),
       childrenCount(std::move(childrenCount))
@@ -105,44 +107,46 @@ std::ostream& operator<<(std::ostream& os, const BTree<T>& t) {
     return os;
 }
 
-template <typename T>
-bool BTree<T>::full() const {
+template <typename T, class Less>
+bool BTree<T, Less>::full() const {
     return info.size() >= children.size() - 1;
 }
 
-template <typename T>
-bool BTree<T>::empty() const {
+template <typename T, class Less>
+bool BTree<T, Less>::empty() const {
     return info.size() <= 0;
 }
 
-template <typename T>
-bool BTree<T>::leaf() const {
+template <typename T, class Less>
+bool BTree<T, Less>::leaf() const {
     return childrenCount <= 0;
 }
 
-template <typename T>
-void BTree<T>::addChild(unsigned int i) {
+template <typename T, class Less>
+void BTree<T, Less>::addChild(unsigned int i) {
     children[i] = new BTree(children.size() - 1);
     childrenCount++;
 }
 
-template <typename T>
-void BTree<T>::removeChild(unsigned int i) {
+template <typename T, class Less>
+void BTree<T, Less>::removeChild(unsigned int i) {
     delete children[i];
     children[i] = nullptr;
     childrenCount--;
 }
 
-template <typename T>
-typename std::vector<T>::iterator BTree<T>::getIterator(const T& data) {
+template <typename T, class Less>
+typename std::vector<T>::iterator BTree<T, Less>::getIterator(const T& data) {
+    Less isLess;
+
     auto it = info.begin();
-    while (it != info.end() && *it < data)
+    while (it != info.end() && isLess(*it, data))
         it++;
     return it;
 }
 
-template <typename T>
-void BTree<T>::insert(T data) {
+template <typename T, class Less>
+void BTree<T, Less>::insert(T data) {
     auto it = getIterator(data);
     if (full()) {
         int index = it - info.begin();
@@ -155,8 +159,8 @@ void BTree<T>::insert(T data) {
     }
 }
 
-template <typename T>
-T BTree<T>::removeAt(unsigned int index) {
+template <typename T, class Less>
+T BTree<T, Less>::removeAt(unsigned int index) {
     auto currentIterator = info.begin() + index;
     unsigned int reverseIndex = info.size() - index - 1;
     T ret(info[index]);
@@ -198,8 +202,8 @@ T BTree<T>::removeAt(unsigned int index) {
     }
 }
 
-template <typename T>
-bool BTree<T>::remove(const T& data) {
+template <typename T, class Less>
+bool BTree<T, Less>::remove(const T& data) {
     auto it = getIterator(data);
     int index = it - info.begin();
     // not in current cBTree
@@ -216,8 +220,8 @@ bool BTree<T>::remove(const T& data) {
     return true;
 }
 
-template <typename T>
-T BTree<T>::popMax() {
+template <typename T, class Less>
+T BTree<T, Less>::popMax() {
     if (children.back() != nullptr) 
         return children.back()->popMax();
 
@@ -230,8 +234,8 @@ T BTree<T>::popMax() {
     return removeAt(info.size() - 1);
 }
 
-template <typename T>
-T BTree<T>::popMin() {
+template <typename T, class Less>
+T BTree<T, Less>::popMin() {
     if (children.front() != nullptr)
         return children.front()->popMin();
 

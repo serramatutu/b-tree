@@ -4,13 +4,17 @@
 #include <iostream>
 #include <cmath>
 #include <algorithm>
+#include <functional>
 
-template <typename T>
+#include "../include/useful.hpp"
+
+template <typename T,
+          class Comparison = compare<T>>
 class AVLTreeNode {
     private:
-        AVLTreeNode<T>** parentPtr;
-        AVLTreeNode<T>* left;
-        AVLTreeNode<T>* right;
+        AVLTreeNode<T, Comparison>** parentPtr;
+        AVLTreeNode<T, Comparison>* left;
+        AVLTreeNode<T, Comparison>* right;
         T data;
 
         void recalcHeight();
@@ -24,16 +28,16 @@ class AVLTreeNode {
         void rRotate();
         void lRotate();
 
-        void insert(const T& data, AVLTreeNode<T>*& pptr);
+        void insert(const T& data, AVLTreeNode<T, Comparison>*& pptr);
 
-        AVLTreeNode<T>& findMin();
-        AVLTreeNode<T>& findMax();
+        AVLTreeNode<T, Comparison>& findMin();
+        AVLTreeNode<T, Comparison>& findMax();
 
     public:
-        AVLTreeNode(const T& data, AVLTreeNode<T>*& parentPtr);
+        AVLTreeNode(const T& data, AVLTreeNode<T, Comparison>*& parentPtr);
         virtual ~AVLTreeNode();
         AVLTreeNode(const AVLTreeNode& other);
-        AVLTreeNode<T>& operator= (AVLTreeNode<T> other);
+        AVLTreeNode<T, Comparison>& operator= (AVLTreeNode<T, Comparison> other);
         AVLTreeNode(AVLTreeNode&& other);
 
         bool isLeaf();
@@ -59,35 +63,35 @@ void swap(AVLTreeNode<T>& a, AVLTreeNode<T>& b) {
     std::swap(a.left, b.left);
 }
 
-template <typename T>
-AVLTreeNode<T>::AVLTreeNode(const T& data, AVLTreeNode<T>*& parentPtr)
+template <typename T, class Comparison>
+AVLTreeNode<T, Comparison>::AVLTreeNode(const T& data, AVLTreeNode<T, Comparison>*& parentPtr)
     : left(nullptr), right(nullptr), data(data), lastHeight(1), parentPtr(&parentPtr)
 {}
 
-template <typename T>
-AVLTreeNode<T>::~AVLTreeNode() {
+template <typename T, class Comparison>
+AVLTreeNode<T, Comparison>::~AVLTreeNode() {
     delete right;
     right = nullptr;
     delete left;
     left = nullptr;
 }
 
-template <typename T>
-AVLTreeNode<T>::AVLTreeNode(const AVLTreeNode& other) : data(other.data), parentPtr(other.parentPtr) {
+template <typename T, class Comparison>
+AVLTreeNode<T, Comparison>::AVLTreeNode(const AVLTreeNode& other) : data(other.data), parentPtr(other.parentPtr) {
     if (other.right != nullptr)
         right = new AVLTreeNode(*other.right);
     if (other.left != nullptr)
         left = new AVLTreeNode(*other.left);
 }
 
-template <typename T>
-AVLTreeNode<T>& AVLTreeNode<T>::operator=(AVLTreeNode<T> other) {
+template <typename T, class Comparison>
+AVLTreeNode<T, Comparison>& AVLTreeNode<T, Comparison>::operator=(AVLTreeNode<T, Comparison> other) {
     swap(*this, other);
     return *this;
 }
 
-template <typename T>
-AVLTreeNode<T>::AVLTreeNode(AVLTreeNode&& other)
+template <typename T, class Comparison>
+AVLTreeNode<T, Comparison>::AVLTreeNode(AVLTreeNode&& other)
     : right(std::move(other.right)),
       left(std::move(other.left)),
       data(std::move(other.data)),
@@ -95,9 +99,10 @@ AVLTreeNode<T>::AVLTreeNode(AVLTreeNode&& other)
       parentPtr(std::move(other.parentPtr))
       {}
 
-template <typename T>
-void AVLTreeNode<T>::insert(const T& data) {
-    if (data < this->data)
+template <typename T, class Comparison>
+void AVLTreeNode<T, Comparison>::insert(const T& data) {
+    Comparison comparison;
+    if (comparison(data, this->data) < 0)
         insert(data, left);
     else
         insert(data, right);
@@ -105,10 +110,10 @@ void AVLTreeNode<T>::insert(const T& data) {
     balance();
 }
 
-template <typename T>
-void AVLTreeNode<T>::insert(const T& data, AVLTreeNode<T>*& ptr) {
+template <typename T, class Comparison>
+void AVLTreeNode<T, Comparison>::insert(const T& data, AVLTreeNode<T, Comparison>*& ptr) {
     if (ptr == nullptr)
-        ptr = new AVLTreeNode<T>(data, ptr);
+        ptr = new AVLTreeNode<T, Comparison>(data, ptr);
     else
         ptr->insert(data);
 
@@ -118,10 +123,11 @@ void AVLTreeNode<T>::insert(const T& data, AVLTreeNode<T>*& ptr) {
         lastHeight = newHeight;
 }
 
-template <typename T>
-bool AVLTreeNode<T>::remove(const T& data) {
-    if (data != this->data) {
-        AVLTreeNode<T>* ptr = data > this->data ? right : left;
+template <typename T, class Comparison>
+bool AVLTreeNode<T, Comparison>::remove(const T& data) {
+    Comparison comparison;
+    if (comparison(data, this->data) != 0) {
+        AVLTreeNode<T, Comparison>* ptr = comparison(data, this->data) > 0 ? right : left;
         if (ptr == nullptr)
             return false;
 
@@ -132,7 +138,7 @@ bool AVLTreeNode<T>::remove(const T& data) {
     }
 
     if (left != nullptr && right != nullptr) { // has both children
-        AVLTreeNode<T>& next = right->findMin();
+        AVLTreeNode<T, Comparison>& next = right->findMin();
         this->data = next.data;
         next.remove(next.data);
         recalcHeight();
@@ -140,7 +146,7 @@ bool AVLTreeNode<T>::remove(const T& data) {
         return true;
     }
 
-    AVLTreeNode<T>* ptr = left != nullptr ? left : right;
+    AVLTreeNode<T, Comparison>* ptr = left != nullptr ? left : right;
     if (ptr != nullptr)
         ptr->parentPtr = parentPtr;
     *parentPtr = ptr;
@@ -151,17 +157,17 @@ bool AVLTreeNode<T>::remove(const T& data) {
     return true;
 }
 
-template <typename T>
-AVLTreeNode<T>& AVLTreeNode<T>::findMin() {
-    AVLTreeNode<T>* current = this;
+template <typename T, class Comparison>
+AVLTreeNode<T, Comparison>& AVLTreeNode<T, Comparison>::findMin() {
+    AVLTreeNode<T, Comparison>* current = this;
     while (current->left != nullptr)
         current = current->left;
     return *current;
 }
 
-template <typename T>
-AVLTreeNode<T>& AVLTreeNode<T>::findMax() {
-    AVLTreeNode<T>* current = this;
+template <typename T, class Comparison>
+AVLTreeNode<T, Comparison>& AVLTreeNode<T, Comparison>::findMax() {
+    AVLTreeNode<T, Comparison>* current = this;
     while (current->right != nullptr)
         current = current->right;
     return *current;
@@ -180,50 +186,50 @@ std::ostream& operator<<(std::ostream& os, const AVLTreeNode<T>& n) {
     return os;
 }
 
-template <typename T>
-void AVLTreeNode<T>::recalcHeight() {
+template <typename T, class Comparison>
+void AVLTreeNode<T, Comparison>::recalcHeight() {
     lastHeight = std::max(lHeight(), rHeight()) + 1;
 }
 
-template <typename T>
-unsigned int AVLTreeNode<T>::height() {
+template <typename T, class Comparison>
+unsigned int AVLTreeNode<T, Comparison>::height() {
     return lastHeight;
 }
 
-template <typename T>
-unsigned int AVLTreeNode<T>::lHeight() {
+template <typename T, class Comparison>
+unsigned int AVLTreeNode<T, Comparison>::lHeight() {
     if (left == nullptr)
         return 0;
     return left->lastHeight;
 }
 
-template <typename T>
-unsigned int AVLTreeNode<T>::rHeight() {
+template <typename T, class Comparison>
+unsigned int AVLTreeNode<T, Comparison>::rHeight() {
     if (right == nullptr)
         return 0;
     return right->lastHeight;
 }
 
-template <typename T>
-int AVLTreeNode<T>::balanceFactor() {
+template <typename T, class Comparison>
+int AVLTreeNode<T, Comparison>::balanceFactor() {
     unsigned int l = left == nullptr ? 0 : left->height(),
                  r = right == nullptr ? 0 : right->height();
 
     return (int)r - (int)l;
 }
 
-template <typename T>
-bool AVLTreeNode<T>::balanced() {
+template <typename T, class Comparison>
+bool AVLTreeNode<T, Comparison>::balanced() {
     return std::abs(balanceFactor()) <= 1;
 }
 
-template <typename T>
-bool AVLTreeNode<T>::isLeaf() {
+template <typename T, class Comparison>
+bool AVLTreeNode<T, Comparison>::isLeaf() {
     return left == nullptr && right == nullptr;
 }
 
-template <typename T>
-void AVLTreeNode<T>::balance() {
+template <typename T, class Comparison>
+void AVLTreeNode<T, Comparison>::balance() {
     int balanceFactor = this->balanceFactor();
     if (balanceFactor > 1) { // right-heavy
         if (right->balanceFactor() <= -1) // RL case
@@ -237,9 +243,9 @@ void AVLTreeNode<T>::balance() {
     }
 }
 
-template <typename T>
-void AVLTreeNode<T>::rRotate() {
-    AVLTreeNode<T>& tmp = *left;
+template <typename T, class Comparison>
+void AVLTreeNode<T, Comparison>::rRotate() {
+    AVLTreeNode<T, Comparison>& tmp = *left;
     left = tmp.right;
     swap(*this, tmp);
     right = &tmp;
@@ -252,9 +258,9 @@ void AVLTreeNode<T>::rRotate() {
     recalcHeight();
 }
 
-template <typename T>
-void AVLTreeNode<T>::lRotate() {
-    AVLTreeNode<T>& tmp = *right;
+template <typename T, class Comparison>
+void AVLTreeNode<T, Comparison>::lRotate() {
+    AVLTreeNode<T, Comparison>& tmp = *right;
     right = tmp.left;
     swap(*this, tmp);
     left = &tmp;
