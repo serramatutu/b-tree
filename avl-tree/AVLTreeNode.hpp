@@ -8,7 +8,7 @@
 template <typename T>
 class AVLTreeNode {
     private:
-        AVLTreeNode<T>*& parentPtr;
+        AVLTreeNode<T>** parentPtr;
         AVLTreeNode<T>* left;
         AVLTreeNode<T>* right;
         T data;
@@ -55,14 +55,13 @@ template <typename T>
 void swap(AVLTreeNode<T>& a, AVLTreeNode<T>& b) {
     std::swap(a.lastHeight, b.lastHeight);
     std::swap(a.data, b.data);
-    std::swap(a.parentPtr, b.parentPtr);
     std::swap(a.right, b.right);
     std::swap(a.left, b.left);
 }
 
 template <typename T>
 AVLTreeNode<T>::AVLTreeNode(const T& data, AVLTreeNode<T>*& parentPtr)
-    : left(nullptr), right(nullptr), data(data), lastHeight(1), parentPtr(parentPtr)
+    : left(nullptr), right(nullptr), data(data), lastHeight(1), parentPtr(&parentPtr)
 {}
 
 template <typename T>
@@ -142,8 +141,11 @@ bool AVLTreeNode<T>::remove(const T& data) {
     }
 
     AVLTreeNode<T>* ptr = left != nullptr ? left : right;
-    ptr->parentPtr = parentPtr;
-    parentPtr = ptr;
+    if (ptr != nullptr)
+        ptr->parentPtr = parentPtr;
+    *parentPtr = ptr;
+    right = nullptr;
+    left = nullptr;
 
     delete this;
     return true;
@@ -237,23 +239,31 @@ void AVLTreeNode<T>::balance() {
 
 template <typename T>
 void AVLTreeNode<T>::rRotate() {
-    AVLTreeNode<T>& newRoot = *left;
-    left = newRoot.right;
-    swap(*this, newRoot);
-    right = &newRoot;
+    AVLTreeNode<T>& tmp = *left;
+    left = tmp.right;
+    swap(*this, tmp);
+    right = &tmp;
 
-    newRoot.recalcHeight();
+    right->parentPtr = &right;
+    if (left != nullptr)
+        left->parentPtr = &left;
+
+    tmp.recalcHeight();
     recalcHeight();
 }
 
 template <typename T>
 void AVLTreeNode<T>::lRotate() {
-    AVLTreeNode<T>& newRoot = *right;
-    right = newRoot.left;
-    swap(*this, newRoot);
-    left = &newRoot;
+    AVLTreeNode<T>& tmp = *right;
+    right = tmp.left;
+    swap(*this, tmp);
+    left = &tmp;
 
-    newRoot.recalcHeight();
+    left->parentPtr = &left;
+    if (right != nullptr)
+        right->parentPtr = &right;
+
+    tmp.recalcHeight();
     recalcHeight();
 }
 
