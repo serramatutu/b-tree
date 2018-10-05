@@ -8,7 +8,7 @@
             "type": "shell",
             "command": "g++",
             "args": [
-                "-g", "-o", "./bin/a.out", "--std=c++11", "${file}"
+                "-g", "-o", "./bin/a.out", "--std=c++11", "-I/${workspaceFolder}/include", "${file}"
             ],
             "group": {
                 "kind": "build",
@@ -20,7 +20,7 @@
             "type": "shell",
             "command": "g++",
             "args": [
-                "-o", "./bin/a.out", "--std=c++11", "${file}"
+                "-o", "./bin/a.out", "--std=c++11", "-I/${workspaceFolder}/include", "${file}"
             ],
             "group": "build"
         }

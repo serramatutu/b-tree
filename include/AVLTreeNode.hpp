@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <functional>
 
-#include "../include/useful.hpp"
+#include "useful.hpp"
 
 template <typename T,
           class Comparison = compare<T>>
