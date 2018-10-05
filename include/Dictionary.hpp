@@ -11,7 +11,7 @@ template <typename Key,
           class Less = std::less<Key>>
 class Dictionary {
     private:
-        typedef std::pair<Key, Value> KVPair;
+        typedef std::pair<Key, Value*> KVPair;
 
         class KeyComparison {
             private:
@@ -38,13 +38,13 @@ class Dictionary {
 };
 
 template <typename K, typename V, class Less>
-void Dictionary::insert(const K& key, V value) {
-    tree.insert(KVPair(key, value));
+void Dictionary::insert(K key, V value) {
+    tree.insert(KVPair(key, &value)); // TODO: Check for possible memory leak
 }
 
 template <typename K, typename V, class Less>
 bool Dictionary::remove(const K& key) {
-    return tree.remove(key);
+    return tree.remove(KVPair(key, nullptr));
 }
 
 template <typename K, typename V, class Less>

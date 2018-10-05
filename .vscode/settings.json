@@ -52,7 +52,8 @@
         "sstream": "cpp",
         "tuple": "cpp",
         "memory": "cpp",
-        "xfunctional": "cpp"
+        "xfunctional": "cpp",
+        "iterator": "cpp"
     },
     "code-runner.executorMap": {
         "cpp": "cd $dir && g++ $fileName -o $fileNameWithoutExt --std=c++11 && $dir$fileNameWithoutExt",
