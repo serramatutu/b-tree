@@ -24,8 +24,8 @@ int main() {
         else if (op == 'r')
             t.remove(num);
         else if (op == 'p') {
-            for (auto it = t.begin(); it!=t.end(); it++)
-                cout << *it << " ";
+            for (int i : t)
+                cout << i << " ";
             cout << endl;
         }
         else

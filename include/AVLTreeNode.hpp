@@ -75,10 +75,11 @@ class AVLTreeNode {
                 bool operator==(const const_iterator& other) {
                     if (root != other.root)
                         return false;
-                    if (s.empty() != other.s.empty())
-                        return false;
+                        
+                    if (!s.empty() && !other.s.empty())
+                        return s.top() == other.s.top();
 
-                    return s.top() == other.s.top();
+                    return s.empty() == other.s.empty();
                 };
 
                 bool operator!=(const const_iterator& other) {
@@ -97,11 +98,11 @@ class AVLTreeNode {
                     if (end())
                         throw std::out_of_range("iterator out of range"); 
 
-                    while(!s.empty() && s.top()->right == nullptr)
-                        s.pop();
+                    const AVLTreeNode<T>* current = s.top();
+                    s.pop();
 
-                    if (!s.empty() && s.top()->right != nullptr) {
-                        s.push(s.top()->right);
+                    if (current->right != nullptr) {
+                        s.push(current->right);
                         while(s.top()->left != nullptr)
                             s.push(s.top()->left);
                     }
@@ -110,16 +111,18 @@ class AVLTreeNode {
                 };
 
                 const_iterator& operator--() { // prefix
+                    // TODO: Redo this
                     if (end())
                         s.push(*root);
 
                     std::stack<AVLTreeNode<T>*> lastStack(s);
 
-                    while (!s.empty() && s.top()->left == nullptr)
-                        s.pop();
-                    if (!s.empty() && s.top()->left != nullptr) {
-                        s.push(s.top()->left);
-                        while (s.top()->right != nullptr)
+                    const AVLTreeNode<T>* current = s.top();
+                    s.pop();
+
+                    if (current->left != nullptr) {
+                        s.push(current->left);
+                        while(s.top()->right != nullptr)
                             s.push(s.top()->right);
                     }
 

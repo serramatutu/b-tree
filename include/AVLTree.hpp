@@ -18,11 +18,12 @@ class AVLTree {
         AVLTree();
         virtual ~AVLTree();
         AVLTree(const AVLTree& other);
-        AVLTree<T, Less>& operator= (AVLTree<T, Less> other);
+        AVLTree<T, Less>& operator=(AVLTree<T, Less> other);
         AVLTree(AVLTree&& other);
 
         void insert(const T& data);
         bool remove(const T& data);
+        proxy find(const T& data);
 
         int height() const;
         const_iterator begin() const;
@@ -84,6 +85,11 @@ bool AVLTree<T, Less>::remove(const T& data) {
     if (root == nullptr)
         return false;
     return root->remove(data);
+}
+
+template <typename T, class Less>
+AVLTree<T, Less>::proxy AVLTree<T, Less>::find(const T& data) {
+    return proxy(root);
 }
 
 template <typename T, class Less>

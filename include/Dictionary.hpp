@@ -48,8 +48,8 @@ bool Dictionary::remove(const K& key) {
 }
 
 template <typename K, typename V, class Less>
-V& operator[](const K& key) {
-    auto it = tree.find(key);
+V& Dictionary::operator[](const K& key) {
+    auto it = tree.find(KVPair(key, nullptr));
     return *it->second;
 }
 
