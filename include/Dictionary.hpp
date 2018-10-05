@@ -8,16 +8,18 @@
 
 template <typename Key,
           typename Value,
-          class Comparison = std::less<Key>>
+          class Less = std::less<Key>>
 class Dictionary {
     private:
         typedef std::pair<Key, Value> KVPair;
 
         class KeyComparison {
-            int operator(const KVPair& a, const KVPair& b) {
-                Comparison comp;
-                return comp(a.first, b.first);
-            }
+            private:
+                compare<KVPair, Less> comparison;
+            public:
+                int operator(const KVPair& a, const KVPair& b) {
+                    return comparison(a.first, b.first);
+                }
         };
 
         AVLTree<KVPair, KeyComparison> tree;
@@ -35,17 +37,17 @@ class Dictionary {
         friend std::ostream& operator<<(std::ostream& os, const Dictionary<U>& d);
 };
 
-template <typename K, typename V, class C>
+template <typename K, typename V, class Less>
 void Dictionary::insert(const K& key, V value) {
     tree.insert(KVPair(key, value));
 }
 
-template <typename K, typename V, class C>
+template <typename K, typename V, class Less>
 bool Dictionary::remove(const K& key) {
     return tree.remove(key);
 }
 
-template <typename K, typename V, class C>
+template <typename K, typename V, class Less>
 V& operator[](const K& key) {
     auto it = tree.find(key);
     return *it->second;
