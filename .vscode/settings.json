@@ -50,7 +50,9 @@
         "functional": "cpp",
         "numeric": "cpp",
         "sstream": "cpp",
-        "tuple": "cpp"
+        "tuple": "cpp",
+        "memory": "cpp",
+        "xfunctional": "cpp"
     },
     "code-runner.executorMap": {
         "cpp": "cd $dir && g++ $fileName -o $fileNameWithoutExt --std=c++11 && $dir$fileNameWithoutExt",
