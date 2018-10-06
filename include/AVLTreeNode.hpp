@@ -39,24 +39,24 @@ class AVLTreeNode {
 
     public:
         class const_iterator : public std::iterator<std::bidirectional_iterator_tag, T> {
-            private:
-                const AVLTreeNode<T>* root;
-                std::stack<const AVLTreeNode<T>*> s;
+            protected:
+                AVLTreeNode<T, Less>* root;
+                std::stack<AVLTreeNode<T, Less>*> s;
                 
                 bool end() {
                     return s.empty();
-                }
+                };
 
                 bool null() {
                     return root == nullptr;
-                }
+                };
 
             public:
                 const_iterator() : root(nullptr) {};
 
-                const_iterator(const AVLTreeNode<T>& tree, bool end=false) : root(&tree) {
+                const_iterator(const AVLTreeNode<T, Less>& tree, bool end=false) : root(&const_cast<AVLTreeNode<T, Less>&>(tree)) {
                     if (!end) {
-                        const AVLTreeNode<T>* ptr = root;
+                        AVLTreeNode<T, Less>* ptr = root;
                         do {
                             s.push(ptr);
                             ptr = ptr->left;
@@ -64,15 +64,7 @@ class AVLTreeNode {
                     }
                 };
 
-                const_iterator(const const_iterator& other) : s(other.s), 
-                                                        root(other.root) {};
-
-                const_iterator& operator=(const_iterator other) {
-                    swap(*this, other);
-                    return *this;
-                };
-
-                bool operator==(const const_iterator& other) {
+                bool operator==(const const_iterator& other) const {
                     if (root != other.root)
                         return false;
                         
@@ -82,7 +74,7 @@ class AVLTreeNode {
                     return s.empty() == other.s.empty();
                 };
 
-                bool operator!=(const const_iterator& other) {
+                bool operator!=(const const_iterator& other) const {
                     return !(*this == other);
                 };
 
@@ -90,15 +82,15 @@ class AVLTreeNode {
                     return s.top()->data;
                 };
 
-                const T& operator->() const {
-                    return s.top()->data;
+                const T* operator->() const {
+                    return &s.top()->data;
                 };
 
                 const_iterator& operator++() { // prefix
                     if (end())
                         throw std::out_of_range("iterator out of range"); 
 
-                    const AVLTreeNode<T>* current = s.top();
+                    AVLTreeNode<T, Less>* current = s.top();
                     s.pop();
 
                     if (current->right != nullptr) {
@@ -115,9 +107,9 @@ class AVLTreeNode {
                     if (end())
                         s.push(*root);
 
-                    std::stack<AVLTreeNode<T>*> lastStack(s);
+                    std::stack<AVLTreeNode<T, Less>*> lastStack(s);
 
-                    const AVLTreeNode<T>* current = s.top();
+                    AVLTreeNode<T, Less>* current = s.top();
                     s.pop();
 
                     if (current->left != nullptr) {
@@ -135,22 +127,52 @@ class AVLTreeNode {
                 };
 
                 const_iterator operator++(int) { // postfix
-                    const_iterator temp(*this);
+                    const_iterator temp(*this); // TODO: Mistake is here
                     ++(*this);
                     return temp;
                 };
 
                 const_iterator operator--(int) { // prefix
-                    const_iterator temp(*this);
+                    const_iterator temp(*this); // TODO: Mistake is here
                     --(*this);
                     return temp;
                 };
 
             friend void swap(const_iterator& a, const_iterator& b) {
                 std::swap(a.root, b.root);
-                std::swap(a.index, b.index);
                 std::swap(a.s, b.s);
             };
+        };
+
+        class iterator : public const_iterator {
+            // iterator() : const_iterator() {};
+
+            iterator(AVLTreeNode<T, Less>& tree, bool end=false) : const_iterator(tree, end) {};
+
+            // iterator(const const_iterator& other) : const_iterator(other) {};
+
+            // iterator(const const_iterator&& other) : const_iterator(other) {};
+
+            // iterator& operator=(iterator other) {
+            //     return const_iterator::operator=(other);
+            // };
+
+            T& operator= (const T& data) {
+                if (this->root.comparison(this->data, data) != 0) { // only removes if changed key
+                    this->root.remove(data);
+                    this->root.insert(data);
+                    this->data = data;
+                }
+                return data;
+            }
+
+            T& operator*() { // TODO: proxy
+                return this->data;
+            }
+
+            T* operator->() {
+                return &this->data;
+            }
         };
 
         AVLTreeNode(const T& data, AVLTreeNode<T, Less>*& parentPtr);
@@ -167,18 +189,21 @@ class AVLTreeNode {
         void insert(const T& data);
         bool remove(const T& data);
 
-        const_iterator begin() const;
-        const_iterator end() const;
+        const_iterator cbegin() const;
+        const_iterator cend() const;
 
-    template <typename U>
-    friend std::ostream& operator<<(std::ostream& os, const AVLTreeNode<U>& n);
+        iterator begin();
+        iterator end();
 
-    template <typename U>
-    friend void swap(AVLTreeNode<U>& a, AVLTreeNode<U>& b);
+    template <typename U, class L>
+    friend std::ostream& operator<<(std::ostream& os, const AVLTreeNode<U, L>& n);
+
+    template <typename U, class L>
+    friend void swap(AVLTreeNode<U, L>& a, AVLTreeNode<U, L>& b);
 };
 
-template <typename T>
-void swap(AVLTreeNode<T>& a, AVLTreeNode<T>& b) {
+template <typename T, class Less>
+void swap(AVLTreeNode<T, Less>& a, AVLTreeNode<T, Less>& b) {
     std::swap(a.lastHeight, b.lastHeight);
     std::swap(a.data, b.data);
     std::swap(a.right, b.right);
@@ -222,13 +247,23 @@ AVLTreeNode<T, Less>::AVLTreeNode(AVLTreeNode&& other)
       {}
 
 template <typename T, class Less>
-typename AVLTreeNode<T, Less>::const_iterator AVLTreeNode<T, Less>::begin() const {
+typename AVLTreeNode<T, Less>::const_iterator AVLTreeNode<T, Less>::cbegin() const {
     return AVLTreeNode<T, Less>::const_iterator(*this);
 }
 
 template <typename T, class Less>
-typename AVLTreeNode<T, Less>::const_iterator AVLTreeNode<T, Less>::end() const {
-    return AVLTreeNode::const_iterator(*this, true);
+typename AVLTreeNode<T, Less>::const_iterator AVLTreeNode<T, Less>::cend() const {
+    return AVLTreeNode<T, Less>::const_iterator(*this, true);
+}
+
+template <typename T, class Less>
+typename AVLTreeNode<T, Less>::iterator AVLTreeNode<T, Less>::begin() {
+    return AVLTreeNode<T, Less>::iterator(*this);
+}
+
+template <typename T, class Less>
+typename AVLTreeNode<T, Less>::iterator AVLTreeNode<T, Less>::end() {
+    return AVLTreeNode<T, Less>::iterator(*this, true);
 }
 
 template <typename T, class Less>
@@ -303,8 +338,8 @@ AVLTreeNode<T, Less>& AVLTreeNode<T, Less>::findMax() {
     return *current;
 }
 
-template <typename T>
-std::ostream& operator<<(std::ostream& os, const AVLTreeNode<T>& n) {
+template <typename T, class Less>
+std::ostream& operator<<(std::ostream& os, const AVLTreeNode<T, Less>& n) {
     os << "(";
     if (n.left != nullptr)
         os << *n.left;

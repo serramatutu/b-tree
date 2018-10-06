@@ -15,6 +15,8 @@ class AVLTree {
 
     public:
         typedef typename AVLTreeNode<T, Less>::const_iterator const_iterator;
+        typedef typename AVLTreeNode<T, Less>::iterator iterator;
+
         AVLTree();
         virtual ~AVLTree();
         AVLTree(const AVLTree& other);
@@ -23,11 +25,15 @@ class AVLTree {
 
         void insert(const T& data);
         bool remove(const T& data);
-        proxy find(const T& data);
+
+        const_iterator find(const T& data) const;
+        iterator find(const T& data);
 
         int height() const;
-        const_iterator begin() const;
-        const_iterator end() const;
+        const_iterator cbegin() const;
+        const_iterator cend() const;
+        iterator begin();
+        iterator end();
 
         template <typename U>
         friend std::ostream& operator<<(std::ostream& os, const AVLTree<U>& t);
@@ -45,7 +51,7 @@ AVLTree<T, Less>::~AVLTree() {
 template <typename T, class Less>
 AVLTree<T, Less>::AVLTree(const AVLTree& other) {
     if (other.root != nullptr)
-        root = new AVLTreeNode<T>(other->root);
+        root = new AVLTreeNode<T, Less>(other->root);
 };
 
 template <typename T, class Less>
@@ -59,23 +65,37 @@ template <typename T, class Less>
 AVLTree<T, Less>::AVLTree(AVLTree&& other) : root(std::move(other.root)) {}
 
 template <typename T, class Less>
-typename AVLTree<T, Less>::const_iterator AVLTree<T, Less>::begin() const {
+typename AVLTree<T, Less>::const_iterator AVLTree<T, Less>::cbegin() const {
     if (root != nullptr)
-        return root->begin();
+        return root->cbegin();
     return AVLTree<T, Less>::const_iterator();
 }
 
 template <typename T, class Less>
-typename AVLTree<T, Less>::const_iterator AVLTree<T, Less>::end() const {
+typename AVLTree<T, Less>::const_iterator AVLTree<T, Less>::cend() const {
+    if (root != nullptr)
+        return root->cend();
+    return AVLTree<T, Less>::const_iterator();
+}
+
+template <typename T, class Less>
+typename AVLTree<T, Less>::iterator AVLTree<T, Less>::begin() {
+    if (root != nullptr)
+        return root->begin();
+    return AVLTree<T, Less>::iterator();
+}
+
+template <typename T, class Less>
+typename AVLTree<T, Less>::iterator AVLTree<T, Less>::end() {
     if (root != nullptr)
         return root->end();
-    return AVLTree<T, Less>::const_iterator();
+    return AVLTree<T, Less>::iterator();
 }
 
 template <typename T, class Less>
 void AVLTree<T, Less>::insert(const T& data) {
     if (root == nullptr)
-        root = new AVLTreeNode<T>(data, root);
+        root = new AVLTreeNode<T, Less>(data, root);
     else
         root->insert(data);
 }
@@ -88,8 +108,16 @@ bool AVLTree<T, Less>::remove(const T& data) {
 }
 
 template <typename T, class Less>
-AVLTree<T, Less>::proxy AVLTree<T, Less>::find(const T& data) {
-    return proxy(root);
+typename AVLTree<T, Less>::const_iterator AVLTree<T, Less>::find(const T& data) const {
+    if (root == nullptr)
+        return end();
+    return root.find(data);
+}
+
+template <typename T, class Less>
+typename AVLTree<T, Less>::iterator AVLTree<T, Less>::find(const T& data) {
+    AVLTree<T, Less>::const_iterator it = find(data);
+    return (AVLTree<T, Less>::iterator)it;
 }
 
 template <typename T, class Less>
