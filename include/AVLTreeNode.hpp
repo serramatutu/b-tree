@@ -145,34 +145,34 @@ class AVLTreeNode {
         };
 
         class iterator : public const_iterator {
-            // iterator() : const_iterator() {};
+            public:
+                iterator() : const_iterator() {};
 
-            iterator(AVLTreeNode<T, Less>& tree, bool end=false) : const_iterator(tree, end) {};
+                iterator(AVLTreeNode<T, Less>& tree, bool end=false) : const_iterator(tree, end) {};
 
-            // iterator(const const_iterator& other) : const_iterator(other) {};
+                // iterator(const const_iterator& other) : const_iterator(other) {};
 
-            // iterator(const const_iterator&& other) : const_iterator(other) {};
+                // iterator(const const_iterator&& other) : const_iterator(other) {};
 
-            // iterator& operator=(iterator other) {
-            //     return const_iterator::operator=(other);
-            // };
+                // iterator& operator=(iterator other) {
+                //     return const_iterator::operator=(other);
+                // };
 
-            T& operator= (const T& data) {
-                if (this->root.comparison(this->data, data) != 0) { // only removes if changed key
-                    this->root.remove(data);
-                    this->root.insert(data);
-                    this->data = data;
+                T& operator= (const T& data) {
+                    if (this->root.comparison(this->s.top()->data, data) != 0) { // only removes if changed key
+                        this->root.remove(data);
+                        this->root.insert(data);
+                    }
+                    return data;
                 }
-                return data;
-            }
 
-            T& operator*() { // TODO: proxy
-                return this->data;
-            }
+                T& operator*() { // TODO: proxy
+                    return this->s.top()->data;
+                }
 
-            T* operator->() {
-                return &this->data;
-            }
+                T* operator->() {
+                    return &this->s.top()->data;
+                }
         };
 
         AVLTreeNode(const T& data, AVLTreeNode<T, Less>*& parentPtr);

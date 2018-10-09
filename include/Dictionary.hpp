@@ -14,16 +14,14 @@ class Dictionary {
     private:
         typedef std::pair<K, std::shared_ptr<V>> KVPair;
 
-        class KeyComparison {
-            private:
-                compare<K, Less> comparison;
+        class KeyLess {
             public:
-                int operator()(const KVPair& a, const KVPair& b) {
-                    return comparison(a.first, b.first);
+                bool operator()(const KVPair& a, const KVPair& b) {
+                    return a.first < b.first;
                 }
         };
 
-        AVLTree<KVPair, KeyComparison> tree;
+        AVLTree<KVPair, KeyLess> tree;
 
     public:
         // Dictionary();
@@ -57,9 +55,10 @@ V& Dictionary<K, V, Less>::operator[](const K& key) {
 template <typename K, typename V>
 std::ostream& operator<<(std::ostream& os, const Dictionary<K, V>& d) {
     os << "[";
-    for (auto it = d.tree.cbegin(); it != d.tree.cend(); ++it) // TODO: implement AVLTree iterator
+    for (auto it = d.tree.cbegin(); it != d.tree.cend(); ++it)
         os << "(" << it->first << ":" << *it->second << ")";
     os << "]";
+
     return os;
 }
 
