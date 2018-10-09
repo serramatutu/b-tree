@@ -108,16 +108,15 @@ bool AVLTree<T, Less>::remove(const T& data) {
 }
 
 template <typename T, class Less>
-typename AVLTree<T, Less>::const_iterator AVLTree<T, Less>::find(const T& data) const {
+typename AVLTree<T, Less>::iterator AVLTree<T, Less>::find(const T& data) {
     if (root == nullptr)
         return end();
-    return root.find(data);
+    return root->find(data);
 }
 
 template <typename T, class Less>
-typename AVLTree<T, Less>::iterator AVLTree<T, Less>::find(const T& data) {
-    AVLTree<T, Less>::const_iterator it = find(data);
-    return (AVLTree<T, Less>::iterator)it;
+typename AVLTree<T, Less>::const_iterator AVLTree<T, Less>::find(const T& data) const {
+    return find(data);
 }
 
 template <typename T, class Less>

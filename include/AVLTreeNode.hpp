@@ -13,30 +13,6 @@
 template <typename T,
           class Less = std::less<T>>
 class AVLTreeNode {
-    private:
-        AVLTreeNode<T, Less>** parentPtr;
-        AVLTreeNode<T, Less>* left;
-        AVLTreeNode<T, Less>* right;
-        T data;
-
-        compare<T, Less> comparison;
-
-        void recalcHeight();
-        unsigned int lastHeight; // the last calculated height
-        unsigned int lHeight();
-        unsigned int rHeight();
-
-        int balanceFactor();
-
-        void balance();
-        void rRotate();
-        void lRotate();
-
-        void insert(const T& data, AVLTreeNode<T, Less>*& pptr);
-
-        AVLTreeNode<T, Less>& findMin();
-        AVLTreeNode<T, Less>& findMax();
-
     public:
         class const_iterator : public std::iterator<std::bidirectional_iterator_tag, T> {
             protected:
@@ -142,6 +118,8 @@ class AVLTreeNode {
                 std::swap(a.root, b.root);
                 std::swap(a.s, b.s);
             };
+
+            friend AVLTreeNode<T, Less>;
         };
 
         class iterator : public const_iterator {
@@ -173,6 +151,8 @@ class AVLTreeNode {
                 T* operator->() {
                     return &this->s.top()->data;
                 }
+
+                friend AVLTreeNode<T, Less>;
         };
 
         AVLTreeNode(const T& data, AVLTreeNode<T, Less>*& parentPtr);
@@ -189,11 +169,39 @@ class AVLTreeNode {
         void insert(const T& data);
         bool remove(const T& data);
 
+        const_iterator find(const T& data) const;
+        iterator find(const T& data);
+
         const_iterator cbegin() const;
         const_iterator cend() const;
 
         iterator begin();
         iterator end();
+
+    private:
+        AVLTreeNode<T, Less>** parentPtr;
+        AVLTreeNode<T, Less>* left;
+        AVLTreeNode<T, Less>* right;
+        T data;
+
+        compare<T, Less> comparison;
+
+        void recalcHeight();
+        unsigned int lastHeight; // the last calculated height
+        unsigned int lHeight();
+        unsigned int rHeight();
+
+        int balanceFactor();
+
+        void balance();
+        void rRotate();
+        void lRotate();
+
+        void insert(const T& data, AVLTreeNode<T, Less>*& pptr);
+
+        AVLTreeNode<T, Less>& findMin();
+        AVLTreeNode<T, Less>& findMax();
+        iterator find(const T& data, iterator& it);
 
     template <typename U, class L>
     friend std::ostream& operator<<(std::ostream& os, const AVLTreeNode<U, L>& n);
@@ -320,6 +328,40 @@ bool AVLTreeNode<T, Less>::remove(const T& data) {
 
     delete this;
     return true;
+}
+
+
+template <typename T, class Less>
+typename AVLTreeNode<T, Less>::const_iterator AVLTreeNode<T, Less>::find(const T& data) const {
+    return find(data);
+}
+
+template <typename T, class Less>
+typename AVLTreeNode<T, Less>::iterator AVLTreeNode<T, Less>::find(const T& data) {
+    iterator i = end();
+    i = find(data, i);
+    if (i != end())
+        return i;
+    return iterator(*this, true);
+}
+
+template <typename T, class Less>
+typename AVLTreeNode<T, Less>::iterator AVLTreeNode<T, Less>::find(const T& data, iterator& it) {
+    it.s.push(this);
+    int comp = comparison(data, this->data);
+    if (comp == 0)
+        return it;
+
+    AVLTreeNode<T, Less>* ptr;
+    if (comp < 0)
+        ptr = left;
+    else
+        ptr = right;
+
+    if (ptr == nullptr)
+        return end();
+    else
+        return ptr->find(data, it);
 }
 
 template <typename T, class Less>

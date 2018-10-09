@@ -20,7 +20,7 @@ int main() {
 
         cin >> key >> value;
         if (op == 'i')
-            d.insert(key, value);
+            d[key] = value;
         else if (op == 'r')
             d.remove(key);
         else
