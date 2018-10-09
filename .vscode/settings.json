@@ -53,7 +53,8 @@
         "tuple": "cpp",
         "memory": "cpp",
         "xfunctional": "cpp",
-        "iterator": "cpp"
+        "iterator": "cpp",
+        "stack": "cpp"
     },
     "code-runner.executorMap": {
         "cpp": "cd $dir && g++ $fileName -o $fileNameWithoutExt --std=c++11 && $dir$fileNameWithoutExt",

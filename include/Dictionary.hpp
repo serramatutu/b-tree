@@ -2,6 +2,7 @@
 #define DICTIONARY_INCLUDED
 
 #include <utility>
+#include <memory>
 
 #include "AVLTree.hpp"
 #include "useful.hpp"
@@ -11,7 +12,7 @@ template <typename K,
           class Less = std::less<K>>
 class Dictionary {
     private:
-        typedef std::pair<K, V*> KVPair;
+        typedef std::pair<K, std::shared_ptr<V>> KVPair;
 
         class KeyComparison {
             private:
@@ -29,7 +30,7 @@ class Dictionary {
         // Dictionary(const Dictionary& other);
         // Dictionary& operator=(const Dictionary& other);
         // Dictionary(const Dictionary&& other);
-        void insert(K k, V v);
+        void insert(K k, const V& v);
         bool remove(const K& k);
         V& operator[](const K& key);
 
@@ -38,8 +39,8 @@ class Dictionary {
 };
 
 template <typename K, typename V, class Less>
-void Dictionary<K, V, Less>::insert(K key, V value) {
-    tree.insert(KVPair(key, &value)); // TODO: Check for possible memory leak
+void Dictionary<K, V, Less>::insert(K key, const V& value) {
+    tree.insert(KVPair(key, std::shared_ptr<V>(new V(value))));
 }
 
 template <typename K, typename V, class Less>
