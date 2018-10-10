@@ -25,4 +25,4 @@ int main() {
             cout << "type in a valid operation" << endl;
         cout << m << endl;
     }
-}
+};

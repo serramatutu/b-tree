@@ -64,20 +64,23 @@ class SparseMatrix {
 
         friend std::ostream& operator<<(std::ostream& os, const SparseMatrix<T>& m) {
             os << "---------------------" << std::endl;
-            for (auto colPair : m.rows) {
+            for (auto colPair = m.rows.cbegin(); colPair != m.rows.cend(); colPair++) {
                 size_t index = 0;
-                for (auto valPair : colPair.second) {
-                    while (index < valPair.first) {
-                        os << m.defaultValue << " ";
-                        index++;
-                    }
-                    os << valPair.second;
-                }
+                std::cout << m.rows << std::endl;
+                // std::cout << colPair->second << std::endl;
+                // for (auto valPair = colPair->second.cbegin(); valPair != colPair->second.cend(); valPair++) {
+                //     while (index < valPair->first && index < m.width) {
+                //         os << m.defaultValue << " ";
+                //         index++;
+                //     }
+                //     os << valPair->second;
+                // }
                 os << std::endl;
             }
+            
             os << "---------------------";
             return os;
-        }
+        };
 };
 
 #endif

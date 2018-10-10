@@ -28,9 +28,20 @@ class Dictionary {
         class const_iterator : public std::iterator<std::bidirectional_iterator_tag, std::pair<K, V&>> {
             protected:
                 typename AVLTree<KVPair, KeyLess>::const_iterator it;
+                typename AVLTree<KVPair, KeyLess>::const_iterator end;
+                std::pair<K, V> pair;
+
+                void updatePair() {
+                    if (this->it != this->end) {
+                        pair.first = this->it->first;
+                        pair.second =  *this->it->second;
+                    }
+                };
                 
             public:
-                const_iterator(const Dictionary& d, bool end=false) : it(const_cast<AVLTree<KVPair, KeyLess>&>(d.tree), end) {};
+                const_iterator(const Dictionary& d, bool end=false) : it(const_cast<AVLTree<KVPair, KeyLess>&>(d.tree), end), end(d.tree.end()) {
+                    updatePair();
+                };
 
                 bool operator==(const const_iterator& other) {
                     return this->it == other.it;
@@ -42,11 +53,13 @@ class Dictionary {
 
                 const_iterator& operator++() { // prefix
                     this->it++;
+                    updatePair();
                     return *this;
                 }
 
                 const_iterator& operator--() { // prefix
                     this->it--;
+                    updatePair();
                     return *this;
                 }
 
@@ -62,12 +75,12 @@ class Dictionary {
                     return temp;
                 };
 
-                const std::pair<K, V&> operator*() const {
-                    return std::pair<K, V&>(this->it->first, *this->it->second);
+                const std::pair<K, V>& operator*() const {
+                    return this->pair;
                 }
 
-                const std::pair<K, V&>* operator->() const {
-                    return &std::pair<K, V&>(this->it->first, *this->it->second);
+                const std::pair<K, V>* operator->() const {
+                    return &this->pair;
                 }
         };
 
@@ -75,12 +88,12 @@ class Dictionary {
             public:
                 iterator(Dictionary& d, bool end=false) : const_iterator(d, end) {};
 
-                std::pair<K, V&> operator*() {
-                    return std::pair<K, V&>(this->it->first, *this->it->second);
+                std::pair<K, V&>& operator*() {
+                    return this->pair;
                 }
 
                 std::pair<K, V&>* operator->() {
-                    return &std::pair<K, V&>(this->it->first, *this->it->second);
+                    return &this->pair;
                 }
         };
 

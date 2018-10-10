@@ -66,9 +66,9 @@ AVLTree<T, Less>::~AVLTree() {
 }
 
 template <typename T, class Less>
-AVLTree<T, Less>::AVLTree(const AVLTree& other) {
+AVLTree<T, Less>::AVLTree(const AVLTree<T, Less>& other) {
     if (other.root != nullptr)
-        root = new AVLTreeNode<T, Less>(other->root);
+        root = new AVLTreeNode<T, Less>(*other.root);
 };
 
 template <typename T, class Less>
