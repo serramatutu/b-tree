@@ -15,15 +15,15 @@ class AVLTree {
         struct const_iterator : public AVLTreeNode<T, Less>::const_iterator {
             const_iterator() : AVLTreeNode<T, Less>::const_iterator() {};
 
-            const_iterator(AVLTree<T, Less>& tree, bool end = false) 
-                : AVLTreeNode<T, Less>::const_iterator(*tree.root, end) {};
+            const_iterator(const AVLTree<T, Less>& tree, bool end = false) 
+                : AVLTreeNode<T, Less>::const_iterator(tree.root, end) {};
         };
 
         struct iterator : public AVLTreeNode<T, Less>::iterator {
             iterator() : AVLTreeNode<T, Less>::iterator() {};
 
             iterator(AVLTree<T, Less>& tree, bool end = false) 
-                : AVLTreeNode<T, Less>::iterator(*tree.root, end) {};
+                : AVLTreeNode<T, Less>::iterator(tree.root, end) {};
         };
         // typedef typename AVLTreeNode<T, Less>::const_iterator const_iterator;
         // typedef typename AVLTreeNode<T, Less>::iterator iterator;
@@ -36,6 +36,8 @@ class AVLTree {
 
         void insert(const T& data);
         bool remove(const T& data);
+
+        bool empty();
 
         const_iterator find(const T& data) const;
         iterator find(const T& data);
@@ -120,6 +122,11 @@ typename AVLTree<T, Less>::iterator AVLTree<T, Less>::end() {
     if (root != nullptr) 
         return AVLTree<T, Less>::downcastIterator(root->end());
     return AVLTree<T, Less>::iterator();
+}
+
+template <typename T, class Less>
+bool AVLTree<T, Less>::empty() {
+    return root == nullptr;
 }
 
 template <typename T, class Less>

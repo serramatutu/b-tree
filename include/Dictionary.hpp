@@ -25,77 +25,80 @@ class Dictionary {
         AVLTree<KVPair, KeyLess> tree;
 
     public:
-        class const_iterator : public std::iterator<std::bidirectional_iterator_tag, std::pair<K, V&>> {
-            protected:
-                typename AVLTree<KVPair, KeyLess>::const_iterator it;
-                typename AVLTree<KVPair, KeyLess>::const_iterator end;
-                std::pair<K, V> pair;
+        typedef typename AVLTree<KVPair, KeyLess>::const_iterator const_iterator;
+        typedef typename AVLTree<KVPair, KeyLess>::iterator iterator;
+        // class const_iterator : public std::iterator<std::bidirectional_iterator_tag, std::pair<K, V&>> {
+        //     protected:
+        //         typename AVLTree<KVPair, KeyLess>::const_iterator it;
+        //         typename AVLTree<KVPair, KeyLess>::const_iterator end;
+        //         std::pair<K, V&> pair;
 
-                void updatePair() {
-                    if (this->it != this->end) {
-                        pair.first = this->it->first;
-                        pair.second =  *this->it->second;
-                    }
-                };
+        //         void updatePair() {
+        //             if (this->it != this->end) {
+        //                 pair.first = this->it->first;
+        //                 pair.second =  *this->it->second;
+        //             }
+        //         };
                 
-            public:
-                const_iterator(const Dictionary& d, bool end=false) : it(const_cast<AVLTree<KVPair, KeyLess>&>(d.tree), end), end(d.tree.end()) {
-                    updatePair();
-                };
+        //     public:
+        //         const_iterator(const Dictionary& d, bool end=false) 
+        //             : it(const_cast<AVLTree<KVPair, KeyLess>&>(d.tree), end), end(d.tree.cend()) {
+        //             updatePair();
+        //         };
 
-                bool operator==(const const_iterator& other) {
-                    return this->it == other.it;
-                }
+        //         bool operator==(const const_iterator& other) {
+        //             return this->it == other.it;
+        //         }
 
-                bool operator!=(const const_iterator& other) {
-                    return !(this->it == other.it);
-                }
+        //         bool operator!=(const const_iterator& other) {
+        //             return !(this->it == other.it);
+        //         }
 
-                const_iterator& operator++() { // prefix
-                    this->it++;
-                    updatePair();
-                    return *this;
-                }
+        //         const_iterator& operator++() { // prefix
+        //             this->it++;
+        //             updatePair();
+        //             return *this;
+        //         }
 
-                const_iterator& operator--() { // prefix
-                    this->it--;
-                    updatePair();
-                    return *this;
-                }
+        //         const_iterator& operator--() { // prefix
+        //             this->it--;
+        //             updatePair();
+        //             return *this;
+        //         }
 
-                const_iterator operator++(int) { // postfix
-                    const_iterator temp(*this);
-                    ++(*this);
-                    return temp;
-                };
+        //         const_iterator operator++(int) { // postfix
+        //             const_iterator temp(*this);
+        //             ++(*this);
+        //             return temp;
+        //         };
 
-                const_iterator operator--(int) { // postfix
-                    const_iterator temp(*this);
-                    --(*this);
-                    return temp;
-                };
+        //         const_iterator operator--(int) { // postfix
+        //             const_iterator temp(*this);
+        //             --(*this);
+        //             return temp;
+        //         };
 
-                const std::pair<K, V>& operator*() const {
-                    return this->pair;
-                }
+        //         const std::pair<K, V>& operator*() const {
+        //             return this->pair;
+        //         }
 
-                const std::pair<K, V>* operator->() const {
-                    return &this->pair;
-                }
-        };
+        //         const std::pair<K, V>* operator->() const {
+        //             return &this->pair;
+        //         }
+        // };
 
-        class iterator : public const_iterator {
-            public:
-                iterator(Dictionary& d, bool end=false) : const_iterator(d, end) {};
+        // class iterator : public const_iterator {
+        //     public:
+        //         iterator(Dictionary& d, bool end=false) : const_iterator(d, end) {};
 
-                std::pair<K, V&>& operator*() {
-                    return this->pair;
-                }
+        //         std::pair<K, V&>& operator*() {
+        //             return this->pair;
+        //         }
 
-                std::pair<K, V&>* operator->() {
-                    return &this->pair;
-                }
-        };
+        //         std::pair<K, V&>* operator->() {
+        //             return &this->pair;
+        //         }
+        // };
 
         const_iterator cbegin() const;
         const_iterator cend() const;
@@ -110,6 +113,8 @@ class Dictionary {
         bool remove(const K& k);
         V& operator[](const K& key);
         bool containsKey(const K& key);
+
+        bool empty();
 
         template <typename L, typename B>
         friend std::ostream& operator<<(std::ostream& os, const Dictionary<L, B>& d);
@@ -131,6 +136,11 @@ bool Dictionary<K, V, Less>::containsKey(const K& key) {
 }
 
 template <typename K, typename V, class Less>
+bool Dictionary<K, V, Less>::empty() {
+    return tree.empty();
+}
+
+template <typename K, typename V, class Less>
 V& Dictionary<K, V, Less>::operator[](const K& key) {
     auto it = tree.find(KVPair(key, nullptr));
     if (it == tree.end()) {
@@ -142,22 +152,22 @@ V& Dictionary<K, V, Less>::operator[](const K& key) {
 
 template <typename K, typename V, class Less>
 typename Dictionary<K, V, Less>::iterator Dictionary<K, V, Less>::begin() {
-    return Dictionary<K, V, Less>::iterator(*this);
+    return Dictionary<K, V, Less>::iterator(this->tree);
 }
 
 template <typename K, typename V, class Less>
 typename Dictionary<K, V, Less>::iterator Dictionary<K, V, Less>::end() {
-    return Dictionary<K, V, Less>::iterator(*this, true);
+    return Dictionary<K, V, Less>::iterator(this->tree, true);
 }
 
 template <typename K, typename V, class Less>
 typename Dictionary<K, V, Less>::const_iterator Dictionary<K, V, Less>::cbegin() const {
-    return Dictionary<K, V, Less>::const_iterator(*this);
+    return Dictionary<K, V, Less>::const_iterator(this->tree);
 }
 
 template <typename K, typename V, class Less>
 typename Dictionary<K, V, Less>::const_iterator Dictionary<K, V, Less>::cend() const {
-    return Dictionary<K, V, Less>::const_iterator(*this, true);
+    return Dictionary<K, V, Less>::const_iterator(this->tree, true);
 }
 
 

@@ -30,15 +30,19 @@ class AVLTreeNode {
             public:
                 const_iterator() : root(nullptr) {};
 
-                const_iterator(const AVLTreeNode<T, Less>& tree, bool end=false) : root(&const_cast<AVLTreeNode<T, Less>&>(tree)) {
-                    if (!end) {
+                const_iterator(const AVLTreeNode<T, Less>* tree, bool end=false) 
+                    : root(const_cast<AVLTreeNode<T, Less>*>(tree)) {
+                    if (!end && root != nullptr) {
                         AVLTreeNode<T, Less>* ptr = root;
                         do {
                             s.push(ptr);
                             ptr = ptr->left;
                         } while(ptr != nullptr);
                     }
-                };
+                }
+
+                const_iterator(const AVLTreeNode<T, Less>& tree, bool end=false) 
+                    : const_iterator(&tree, end) {};
 
                 bool operator==(const const_iterator& other) const {
                     if (root != other.root)
@@ -125,6 +129,8 @@ class AVLTreeNode {
         class iterator : public const_iterator {
             public:
                 iterator() : const_iterator() {};
+
+                iterator(AVLTreeNode<T, Less>* tree, bool end=false) : const_iterator(tree, end) {};
 
                 iterator(AVLTreeNode<T, Less>& tree, bool end=false) : const_iterator(tree, end) {};
 

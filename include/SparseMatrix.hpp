@@ -20,6 +20,28 @@ class SparseMatrix {
         
         Rows rows;
 
+        
+        static std::ostream& printDefaultUntil(std::ostream& os, 
+                                               const SparseMatrix<T>& m, 
+                                               size_t xs, size_t ys, 
+                                               size_t x, size_t y) {
+            while (ys < y) {
+                while (xs < m.width) {
+                    os << m.defaultValue << " ";
+                    xs++;
+                }
+                ys++;
+                xs = 0;
+                os << std::endl;
+            }
+            while (xs < x) {
+                os << m.defaultValue << " ";
+                xs++;
+            }
+
+            return os;
+        }
+
     public:
         class Cell {
             protected:
@@ -31,7 +53,9 @@ class SparseMatrix {
 
                 T& operator=(const T& data) {
                     if (data == matrix.defaultValue) {
-                        matrix.rows[x].remove(y);
+                        matrix.rows[y].remove(x);
+                        if (matrix.rows[y].empty())
+                            matrix.rows.remove(y);
                         return matrix.defaultValue;
                     }
 
@@ -64,20 +88,20 @@ class SparseMatrix {
 
         friend std::ostream& operator<<(std::ostream& os, const SparseMatrix<T>& m) {
             os << "---------------------" << std::endl;
+
+            size_t lastX = 0,
+                   lastY = 0;
             for (auto colPair = m.rows.cbegin(); colPair != m.rows.cend(); colPair++) {
-                size_t index = 0;
-                std::cout << m.rows << std::endl;
-                // std::cout << colPair->second << std::endl;
-                // for (auto valPair = colPair->second.cbegin(); valPair != colPair->second.cend(); valPair++) {
-                //     while (index < valPair->first && index < m.width) {
-                //         os << m.defaultValue << " ";
-                //         index++;
-                //     }
-                //     os << valPair->second;
-                // }
-                os << std::endl;
+                for (auto valPair = colPair->second->cbegin(); valPair != colPair->second->cend(); valPair++) {
+                    printDefaultUntil(os, m, lastX, lastY, colPair->first, valPair->first);
+                    os << *valPair->second << " ";
+
+                    lastX = colPair->first + 1;
+                    lastY = valPair->first;
+                }
             }
-            
+            printDefaultUntil(os, m, lastX, lastY, m.width, m.height - 1);
+            os << std::endl;
             os << "---------------------";
             return os;
         };
