@@ -20,7 +20,7 @@ int main() {
 
         cin >> x >> y >> val;
         if (op == 'i')
-            m.at(x, y) = val;
+            m[x][y] = val;
         else
             cout << "type in a valid operation" << endl;
         cout << m << endl;

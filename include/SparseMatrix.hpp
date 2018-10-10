@@ -78,12 +78,27 @@ class SparseMatrix {
                 }
         };
 
+        class Row {
+            protected:
+                SparseMatrix& matrix;
+                size_t y;
+
+            public:
+                Row(SparseMatrix& matrix, size_t y) : matrix(matrix), y(y) {};
+
+                Cell operator[](size_t x) {
+                    if (x >= matrix.width)
+                        throw std::invalid_argument("invalid matrix coordinates");
+                    return Cell(matrix, x, y);
+                };
+        };
+
         SparseMatrix(const T& defaultValue, size_t w, size_t h) : defaultValue(defaultValue), width(w), height(h) {};
 
-        Cell at(size_t x, size_t y) {
-            if (x >= width || y >= height)
+        Row operator[](size_t y) {
+            if (y >= height)
                 throw std::invalid_argument("invalid matrix coordinates");
-            return Cell(*this, x, y);
+            return Row(*this, y);
         };
 
         friend std::ostream& operator<<(std::ostream& os, const SparseMatrix<T>& m) {
