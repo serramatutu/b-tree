@@ -30,7 +30,7 @@ class Dictionary {
                 typename AVLTree<KVPair, KeyLess>::const_iterator it;
                 
             public:
-                const_iterator(const Dictionary& d, bool end=false) : it(d.tree.root, end) {};
+                const_iterator(const Dictionary& d, bool end=false) : it(const_cast<AVLTree<KVPair, KeyLess>&>(d.tree), end) {};
 
                 bool operator==(const const_iterator& other) {
                     return this->it == other.it;
