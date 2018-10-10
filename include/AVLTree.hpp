@@ -14,8 +14,21 @@ class AVLTree {
         AVLTreeNode<T, Less>* root;
 
     public:
-        typedef typename AVLTreeNode<T, Less>::const_iterator const_iterator;
-        typedef typename AVLTreeNode<T, Less>::iterator iterator;
+        struct const_iterator : public AVLTreeNode<T, Less>::const_iterator {
+            const_iterator() : AVLTreeNode<T, Less>::const_iterator() {};
+
+            const_iterator(AVLTree<T, Less>& tree, bool end = false) 
+                : AVLTreeNode<T, Less>::const_iterator(tree.root, end) {};
+        };
+
+        struct iterator : public AVLTreeNode<T, Less>::iterator {
+            iterator() : AVLTreeNode<T, Less>::iterator() {};
+
+            iterator(AVLTree<T, Less>& tree, bool end = false) 
+                : AVLTreeNode<T, Less>::iterator(tree.root, end) {};
+        };
+        // typedef typename AVLTreeNode<T, Less>::const_iterator const_iterator;
+        // typedef typename AVLTreeNode<T, Less>::iterator iterator;
 
         AVLTree();
         virtual ~AVLTree();
@@ -66,29 +79,37 @@ AVLTree<T, Less>::AVLTree(AVLTree&& other) : root(std::move(other.root)) {}
 
 template <typename T, class Less>
 typename AVLTree<T, Less>::const_iterator AVLTree<T, Less>::cbegin() const {
-    if (root != nullptr)
-        return root->cbegin();
+    if (root != nullptr) {
+        typename AVLTreeNode<T, Less>::const_iterator tmp(root->cbegin());
+        return static_cast<AVLTree<T, Less>::const_iterator&>(tmp);
+    }
     return AVLTree<T, Less>::const_iterator();
 }
 
 template <typename T, class Less>
 typename AVLTree<T, Less>::const_iterator AVLTree<T, Less>::cend() const {
-    if (root != nullptr)
-        return root->cend();
+    if (root != nullptr) {
+        typename AVLTreeNode<T, Less>::const_iterator tmp(root->cend());
+        return static_cast<AVLTree<T, Less>::const_iterator&>(tmp);
+    }
     return AVLTree<T, Less>::const_iterator();
 }
 
 template <typename T, class Less>
 typename AVLTree<T, Less>::iterator AVLTree<T, Less>::begin() {
-    if (root != nullptr)
-        return root->begin();
+    if (root != nullptr){
+        typename AVLTreeNode<T, Less>::iterator tmp(root->begin());
+        return static_cast<AVLTree<T, Less>::iterator&>(tmp);
+    }
     return AVLTree<T, Less>::iterator();
 }
 
 template <typename T, class Less>
 typename AVLTree<T, Less>::iterator AVLTree<T, Less>::end() {
-    if (root != nullptr)
-        return root->end();
+    if (root != nullptr) {
+        typename AVLTreeNode<T, Less>::iterator tmp(root->end());
+        return static_cast<AVLTree<T, Less>::iterator&>(tmp);
+    }
     return AVLTree<T, Less>::iterator();
 }
 

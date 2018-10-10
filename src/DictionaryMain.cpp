@@ -23,6 +23,11 @@ int main() {
             d[key] = value;
         else if (op == 'r')
             d.remove(key);
+        else if (op == 'p') {
+            for (std::pair<int, int> p : d)
+                cout << p.first << " " << p.second;
+            cout << std::endl;
+        }
         else
             cout << "type in a valid operation" << endl;
         cout << d << endl;

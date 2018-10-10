@@ -103,13 +103,13 @@ class AVLTreeNode {
                 };
 
                 const_iterator operator++(int) { // postfix
-                    const_iterator temp(*this); // TODO: Mistake is here
+                    const_iterator temp(*this);
                     ++(*this);
                     return temp;
                 };
 
-                const_iterator operator--(int) { // prefix
-                    const_iterator temp(*this); // TODO: Mistake is here
+                const_iterator operator--(int) { // postfix
+                    const_iterator temp(*this);
                     --(*this);
                     return temp;
                 };
