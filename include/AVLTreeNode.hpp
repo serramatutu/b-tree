@@ -207,7 +207,7 @@ class AVLTreeNode {
 
         AVLTreeNode<T, Less>& findMin();
         AVLTreeNode<T, Less>& findMax();
-        iterator find(const T& data, iterator& it);
+        const_iterator find(const T& data, const_iterator& it) const;
 
     template <typename U, class L>
     friend std::ostream& operator<<(std::ostream& os, const AVLTreeNode<U, L>& n);
@@ -339,20 +339,24 @@ bool AVLTreeNode<T, Less>::remove(const T& data) {
 
 template <typename T, class Less>
 typename AVLTreeNode<T, Less>::const_iterator AVLTreeNode<T, Less>::find(const T& data) const {
-    return find(data);
+    const_iterator i = cend();
+    i = find(data, i);
+    if (i != cend())
+        return i;
+    return const_iterator(*this, true);
 }
 
 template <typename T, class Less>
 typename AVLTreeNode<T, Less>::iterator AVLTreeNode<T, Less>::find(const T& data) {
-    iterator i = end();
+    const_iterator i = cend();
     i = find(data, i);
-    if (i != end())
-        return i;
+    if (i != cend())
+        return static_cast<iterator&>(i);
     return iterator(*this, true);
 }
 
 template <typename T, class Less>
-typename AVLTreeNode<T, Less>::iterator AVLTreeNode<T, Less>::find(const T& data, iterator& it) {
+typename AVLTreeNode<T, Less>::const_iterator AVLTreeNode<T, Less>::find(const T& data, const_iterator& it) const {
     it.s.push(this);
     int comp = comparison(data, this->data);
     if (comp == 0)
@@ -365,7 +369,7 @@ typename AVLTreeNode<T, Less>::iterator AVLTreeNode<T, Less>::find(const T& data
         ptr = right;
 
     if (ptr == nullptr)
-        return end();
+        return cend();
     else
         return ptr->find(data, it);
 }

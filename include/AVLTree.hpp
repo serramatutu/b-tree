@@ -37,7 +37,7 @@ class AVLTree {
         void insert(const T& data);
         bool remove(const T& data);
 
-        bool empty();
+        bool empty() const;
 
         const_iterator find(const T& data) const;
         iterator find(const T& data);
@@ -125,7 +125,7 @@ typename AVLTree<T, Less>::iterator AVLTree<T, Less>::end() {
 }
 
 template <typename T, class Less>
-bool AVLTree<T, Less>::empty() {
+bool AVLTree<T, Less>::empty() const {
     return root == nullptr;
 }
 
@@ -153,7 +153,9 @@ typename AVLTree<T, Less>::iterator AVLTree<T, Less>::find(const T& data) {
 
 template <typename T, class Less>
 typename AVLTree<T, Less>::const_iterator AVLTree<T, Less>::find(const T& data) const {
-    return find(data);
+    if (root == nullptr)
+        return cend();
+    return AVLTree<T, Less>::downcastIterator(const_cast<const AVLTreeNode<T, Less>*>(root)->find(data));
 }
 
 template <typename T, class Less>

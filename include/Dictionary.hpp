@@ -112,9 +112,9 @@ class Dictionary {
         void insert(K k, const V& v);
         bool remove(const K& k);
         V& operator[](const K& key);
-        bool containsKey(const K& key);
+        bool containsKey(const K& key) const;
 
-        bool empty();
+        bool empty() const;
 
         template <typename L, typename B>
         friend std::ostream& operator<<(std::ostream& os, const Dictionary<L, B>& d);
@@ -131,12 +131,12 @@ bool Dictionary<K, V, Less>::remove(const K& key) {
 }
 
 template <typename K, typename V, class Less>
-bool Dictionary<K, V, Less>::containsKey(const K& key) {
-    return tree.find(key) != tree.cend();
+bool Dictionary<K, V, Less>::containsKey(const K& key) const {
+    return tree.find(KVPair(key, nullptr)) != tree.cend();
 }
 
 template <typename K, typename V, class Less>
-bool Dictionary<K, V, Less>::empty() {
+bool Dictionary<K, V, Less>::empty() const {
     return tree.empty();
 }
 
