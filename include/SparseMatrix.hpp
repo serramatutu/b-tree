@@ -65,24 +65,15 @@ class SparseMatrix {
                 }
 
                 const T& operator*() const {
-                    return *operator->();
-                }
-
-                const T* operator->() const {
                     if (!matrix.rows.containsKey(y))
-                        return &matrix.defaultValue;
-                    Cols cols(matrix.rows[y]);
-                    if (!cols.containsKey(x))
-                        return &matrix.defaultValue;
-                    return &cols[x];
+                        return matrix.defaultValue;
+                    if (!matrix.rows[y].containsKey(x))
+                        return matrix.defaultValue;
+                    return matrix.rows[y][x];
                 }
 
                 T& operator*() {
                     return const_cast<T&>(operator*());
-                }
-
-                T* operator->() {
-                    return const_cast<T*>(operator->());
                 }
 
                 friend std::ostream& operator<<(std::ostream& os, const Cell& c) {

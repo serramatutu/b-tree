@@ -356,9 +356,10 @@ typename AVLTreeNode<T, Less>::iterator AVLTreeNode<T, Less>::find(const T& data
 }
 
 template <typename T, class Less>
-typename AVLTreeNode<T, Less>::const_iterator AVLTreeNode<T, Less>::find(const T& data, const_iterator& it) const {
-    it.s.push(this);
-    int comp = comparison(data, this->data);
+typename AVLTreeNode<T, Less>::const_iterator AVLTreeNode<T, Less>::find
+    (const T& data, typename AVLTreeNode<T, Less>::const_iterator& it) const {
+    it.s.push(const_cast<AVLTreeNode<T, Less>*>(this));
+    int comp = this->comparison(data, this->data);
     if (comp == 0)
         return it;
 
@@ -369,7 +370,7 @@ typename AVLTreeNode<T, Less>::const_iterator AVLTreeNode<T, Less>::find(const T
         ptr = right;
 
     if (ptr == nullptr)
-        return cend();
+        return it.root->cend();
     else
         return ptr->find(data, it);
 }

@@ -17,7 +17,7 @@ class Dictionary {
 
         class KeyLess {
             public:
-                bool operator()(const KVPair& a, const KVPair& b) {
+                bool operator()(const KVPair& a, const KVPair& b) const {
                     return a.first < b.first;
                 }
         };
@@ -147,7 +147,7 @@ V& Dictionary<K, V, Less>::operator[](const K& key) {
         tree.insert(KVPair(key, std::shared_ptr<V>(new V()))); // TODO: optimize
         it = tree.find(KVPair(key, nullptr));
     }
-    return *it->second;        
+    return *it->second;
 }
 
 template <typename K, typename V, class Less>
