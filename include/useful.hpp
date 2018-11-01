@@ -1,6 +1,8 @@
 #ifndef USEFUL_INCLUDED
 #define USEFUL_INCLUDED
 
+#include <fstream>
+
 template <typename T,
           class Less = std::less<T>>
 class compare {

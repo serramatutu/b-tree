@@ -54,7 +54,19 @@
         "memory": "cpp",
         "xfunctional": "cpp",
         "iterator": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "set": "cpp",
+        "xtree": "cpp",
+        "ratio": "cpp",
+        "chrono": "cpp",
+        "codecvt": "cpp",
+        "ctime": "cpp",
+        "filesystem": "cpp",
+        "locale": "cpp",
+        "xlocbuf": "cpp",
+        "xlocmes": "cpp",
+        "xlocmon": "cpp",
+        "xloctime": "cpp"
     },
     "code-runner.executorMap": {
         "cpp": "cd $dir && g++ $fileName -o $fileNameWithoutExt --std=c++11 && $dir$fileNameWithoutExt",

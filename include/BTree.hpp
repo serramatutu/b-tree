@@ -222,8 +222,12 @@ bool BTree<T, Less>::remove(const T& data) {
 
 template <typename T, class Less>
 T BTree<T, Less>::popMax() {
-    if (children.back() != nullptr) 
-        return children.back()->popMax();
+    if (children.back() != nullptr) {
+        T ret(children.back()->popMax());
+        if (children.back()->empty())
+            removeChild(children.size() - 1);
+        return ret;
+    }
 
     if (leaf()) {
         T ret(info.back());
@@ -236,8 +240,12 @@ T BTree<T, Less>::popMax() {
 
 template <typename T, class Less>
 T BTree<T, Less>::popMin() {
-    if (children.front() != nullptr)
-        return children.front()->popMin();
+    if (children.front() != nullptr) {
+        T ret(children.front()->popMin());
+        if (children.front()->empty())
+            removeChild(0);
+        return ret;
+    }
 
     if (leaf()) {
         T ret(info.front());
