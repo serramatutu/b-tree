@@ -21,8 +21,10 @@ int main() {
         cin >> num >> index;
         if (op == 'w')
             t.write(num, index);
+        else if (op == 'f')
+            cout << "Flags: " << t.flags() << endl;
         else if (op == 'r')
-            t.read(num);
+            cout << "Read: " << t.read(num) << endl;
         else if (op == 'd')
             t.remove(num);
         else
