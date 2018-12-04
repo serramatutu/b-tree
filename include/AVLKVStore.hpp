@@ -1,5 +1,5 @@
-#ifndef DICTIONARY_INCLUDED
-#define DICTIONARY_INCLUDED
+#ifndef AVL_KV_STORE_INCLUDED
+#define AVL_KV_STORE_INCLUDED
 
 #include <utility>
 #include <memory>
@@ -11,7 +11,7 @@
 template <typename K,
           typename V,
           class Less = std::less<K>>
-class Dictionary {
+class AVLKVStore {
     private:
         typedef std::pair<K, std::shared_ptr<V>> KVPair;
 
@@ -41,7 +41,7 @@ class Dictionary {
         //         };
                 
         //     public:
-        //         const_iterator(const Dictionary& d, bool end=false) 
+        //         const_iterator(const AVLKVStore& d, bool end=false) 
         //             : it(const_cast<AVLTree<KVPair, KeyLess>&>(d.tree), end), end(d.tree.cend()) {
         //             updatePair();
         //         };
@@ -89,7 +89,7 @@ class Dictionary {
 
         // class iterator : public const_iterator {
         //     public:
-        //         iterator(Dictionary& d, bool end=false) : const_iterator(d, end) {};
+        //         iterator(AVLKVStore& d, bool end=false) : const_iterator(d, end) {};
 
         //         std::pair<K, V&>& operator*() {
         //             return this->pair;
@@ -105,10 +105,10 @@ class Dictionary {
         iterator begin();
         iterator end();
 
-        // Dictionary();
-        // Dictionary(const Dictionary& other);
-        // Dictionary& operator=(const Dictionary& other);
-        // Dictionary(const Dictionary&& other);
+        // AVLKVStore();
+        // AVLKVStore(const AVLKVStore& other);
+        // AVLKVStore& operator=(const AVLKVStore& other);
+        // AVLKVStore(const AVLKVStore&& other);
         void insert(K k, const V& v);
         bool remove(const K& k);
         V& operator[](const K& key);
@@ -117,31 +117,31 @@ class Dictionary {
         bool empty() const;
 
         template <typename L, typename B>
-        friend std::ostream& operator<<(std::ostream& os, const Dictionary<L, B>& d);
+        friend std::ostream& operator<<(std::ostream& os, const AVLKVStore<L, B>& d);
 };
 
 template <typename K, typename V, class Less>
-void Dictionary<K, V, Less>::insert(K key, const V& value) {
+void AVLKVStore<K, V, Less>::insert(K key, const V& value) {
     tree.insert(KVPair(key, std::shared_ptr<V>(new V(value))));
 }
 
 template <typename K, typename V, class Less>
-bool Dictionary<K, V, Less>::remove(const K& key) {
+bool AVLKVStore<K, V, Less>::remove(const K& key) {
     return tree.remove(KVPair(key, nullptr));
 }
 
 template <typename K, typename V, class Less>
-bool Dictionary<K, V, Less>::containsKey(const K& key) const {
+bool AVLKVStore<K, V, Less>::containsKey(const K& key) const {
     return tree.find(KVPair(key, nullptr)) != tree.cend();
 }
 
 template <typename K, typename V, class Less>
-bool Dictionary<K, V, Less>::empty() const {
+bool AVLKVStore<K, V, Less>::empty() const {
     return tree.empty();
 }
 
 template <typename K, typename V, class Less>
-V& Dictionary<K, V, Less>::operator[](const K& key) {
+V& AVLKVStore<K, V, Less>::operator[](const K& key) {
     auto it = tree.find(KVPair(key, nullptr));
     if (it == tree.end()) {
         tree.insert(KVPair(key, std::shared_ptr<V>(new V()))); // TODO: optimize
@@ -151,29 +151,29 @@ V& Dictionary<K, V, Less>::operator[](const K& key) {
 }
 
 template <typename K, typename V, class Less>
-typename Dictionary<K, V, Less>::iterator Dictionary<K, V, Less>::begin() {
-    return Dictionary<K, V, Less>::iterator(this->tree);
+typename AVLKVStore<K, V, Less>::iterator AVLKVStore<K, V, Less>::begin() {
+    return AVLKVStore<K, V, Less>::iterator(this->tree);
 }
 
 template <typename K, typename V, class Less>
-typename Dictionary<K, V, Less>::iterator Dictionary<K, V, Less>::end() {
-    return Dictionary<K, V, Less>::iterator(this->tree, true);
+typename AVLKVStore<K, V, Less>::iterator AVLKVStore<K, V, Less>::end() {
+    return AVLKVStore<K, V, Less>::iterator(this->tree, true);
 }
 
 template <typename K, typename V, class Less>
-typename Dictionary<K, V, Less>::const_iterator Dictionary<K, V, Less>::cbegin() const {
-    return Dictionary<K, V, Less>::const_iterator(this->tree);
+typename AVLKVStore<K, V, Less>::const_iterator AVLKVStore<K, V, Less>::cbegin() const {
+    return AVLKVStore<K, V, Less>::const_iterator(this->tree);
 }
 
 template <typename K, typename V, class Less>
-typename Dictionary<K, V, Less>::const_iterator Dictionary<K, V, Less>::cend() const {
-    return Dictionary<K, V, Less>::const_iterator(this->tree, true);
+typename AVLKVStore<K, V, Less>::const_iterator AVLKVStore<K, V, Less>::cend() const {
+    return AVLKVStore<K, V, Less>::const_iterator(this->tree, true);
 }
 
 
 
 template <typename K, typename V>
-std::ostream& operator<<(std::ostream& os, const Dictionary<K, V>& d) {
+std::ostream& operator<<(std::ostream& os, const AVLKVStore<K, V>& d) {
     os << "[";
     for (auto it = d.tree.cbegin(); it != d.tree.cend(); ++it)
         os << "(" << it->first << ":" << *it->second << ")";

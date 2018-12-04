@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <utility>
 
-#include "Dictionary.hpp"
+#include "AVLKVStore.hpp"
 
 template <typename T>
 class SparseMatrix {
@@ -15,8 +15,8 @@ class SparseMatrix {
 
         size_t width, height;
 
-        typedef Dictionary<size_t, T> Cols;
-        typedef Dictionary<size_t, Cols> Rows;
+        typedef AVLKVStore<size_t, T> Cols;
+        typedef AVLKVStore<size_t, Cols> Rows;
         
         Rows rows;
 

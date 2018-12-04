@@ -1,12 +1,12 @@
 #include <iostream>
 #include <string>
 
-#include "Dictionary.hpp"
+#include "AVLKVStore.hpp"
 
 using namespace std;
 
 int main() {
-    Dictionary<int, int> d;
+    AVLKVStore<int, int> d;
     
     while (true) {
         string s;

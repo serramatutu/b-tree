@@ -2,6 +2,8 @@
 #define FILESTORAGE_INCLUDED
 
 #include <string>
+#include <memory>
+#include <type_traits>
 #include <fstream>
 #include <stdexcept>
 #include <cstdio>
@@ -11,8 +13,36 @@
    (flags) flags
    (sizeof(T) + sizeof(bool))[] data */
 
-template <typename T> 
+// Only serializers constant size objects
+template <typename T>
+class ConstantSizeSerializer
+{
+    public:
+        static virtual size_t serialize_size() const = 0;
+        static virtual void serialize(const T& in, char* out) const = 0;
+        static virtual void deserialize(const char* in, T& out) const = 0;
+};
+
+template <typename T>
+class BinarySerializer : ConstantSizeSerializer {
+    public:
+        static virtual size_t serialize_size() const {
+            return sizeof(T);
+        }
+
+        static virtual void serialize(const T& in, char* out) const {
+            out = reinterpret_cast<char*>(in);
+        }
+
+        static virtual void deserialize(char* in, T& out) const {
+            out = reinterpret_cast<T&>(in);
+        }
+};
+
+template <typename T,
+          class Serializer = BinarySerializer<T>> 
 class FileStorage {
+
     public:
         typedef enum FileFlags {
             CLEAN = 1,
@@ -23,6 +53,9 @@ class FileStorage {
 
         FileStorage(std::string path) : path(path)
         {
+            static_assert(std::is_base_of<ConstantSizeSerializer, Serializer>()::value, 
+                          "Serializer must derive from DataSerializer")
+
             using std::fstream;
 
             fstream file(path);
@@ -56,15 +89,15 @@ class FileStorage {
             if (index >= 0)
                 setOutPosition(file, index);
             file << true;
-            file.write(&data, sizeof(T));
+            file.write(Serializer.serialize(data), Serializer.serialize_size());
         }
 
         T read(size_t index) {
             std::ifstream file(path);
             setInPosition(file, index);
-            T data;
-            file.read(&data, sizeof(T));
-            return data;
+            shared_ptr<char> bytes;
+            file.read(bytes, Serializer.serialize_size());
+            return Serializer.deserialize(bytes);
         }
 
         std::set<size_t> rewrite() {
@@ -83,10 +116,10 @@ class FileStorage {
                 bool valid;
                 T data;
                 file >> valid;
-                file.read(&data, sizeof(T));
+                file.read(&data, Serializer.serialize_size());
                 if (valid) {
                     tmp << true;
-                    tmp.write(data, sizeof(T));
+                    tmp.write(data, Serializer.serialize_size());
                 }
                 else
                     invalidatedIndexes.insert(index);
@@ -139,11 +172,11 @@ class FileStorage {
         }
 
         static void setOutPosition(std::ofstream& file, size_t offset) {
-            file.seekp(sizeof(FileFlags) + offset * (sizeof(T) + sizeof(bool)), file.beg);
+            file.seekp(sizeof(FileFlags) + offset * (sizeof(bool) + Serializer.serialize_size()), file.beg);
         }
 
         static void setInPosition(std::ifstream& file, size_t offset) {
-            file.seekg(sizeof(FileFlags) + offset * (sizeof(bool) + sizeof(T)), file.beg);
+            file.seekg(sizeof(FileFlags) + offset * (sizeof(bool) + Serializer.serialize_size()), file.beg);
         }
 };
 
