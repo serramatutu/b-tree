@@ -64,6 +64,14 @@ class SparseMatrix {
                     return val;
                 }
 
+                const T& operator*() const {
+                    if (!matrix.rows.containsKey(y))
+                        return matrix.defaultValue;
+                    if (!matrix.rows.at(y).containsKey(x))
+                        return matrix.defaultValue;
+                    return matrix.rows.at(y).at(x);
+                }
+
                 T& operator*() {
                     if (!matrix.rows.containsKey(y))
                         return matrix.defaultValue;
