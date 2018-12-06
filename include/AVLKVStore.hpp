@@ -111,7 +111,11 @@ class AVLKVStore {
         // AVLKVStore(const AVLKVStore&& other);
         void insert(K k, const V& v);
         bool remove(const K& k);
+        int removeWhere(std::function<bool(int)> criterion);
+        void foreach(std::function<void(const V&)> operation);
+
         V& operator[](const K& key);
+        const V& at(const K& key) const;
         bool containsKey(const K& key) const;
 
         bool empty() const;
@@ -131,6 +135,20 @@ bool AVLKVStore<K, V, Less>::remove(const K& key) {
 }
 
 template <typename K, typename V, class Less>
+int AVLKVStore<K, V, Less>::removeWhere(std::function<bool(int)> criterion) {
+    for (KVPair p : this) {
+        if (criterion(p.first))
+            remove(p.first);
+    }
+}
+
+template <typename K, typename V, class Less>
+void AVLKVStore<K, V, Less>::foreach(std::function<void(const V&)> operation) {
+    for (KVPair p : this)
+        operation(*p.second);
+}
+
+template <typename K, typename V, class Less>
 bool AVLKVStore<K, V, Less>::containsKey(const K& key) const {
     return tree.find(KVPair(key, nullptr)) != tree.cend();
 }
@@ -147,6 +165,14 @@ V& AVLKVStore<K, V, Less>::operator[](const K& key) {
         tree.insert(KVPair(key, std::shared_ptr<V>(new V()))); // TODO: optimize
         it = tree.find(KVPair(key, nullptr));
     }
+    return *it->second;
+}
+
+template <typename K, typename V, class Less>
+const V& AVLKVStore<K, V, Less>::at(const K& key) const {
+    auto it = tree.find(KVPair(key, nullptr));
+    if (it == tree.cend())
+        throw std::invalid_argument("no key named "+key);
     return *it->second;
 }
 
