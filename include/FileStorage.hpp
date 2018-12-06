@@ -71,38 +71,80 @@ class FileStorage {
         const Serializer serializer;
 
     public:
-        typedef enum FileFlags {
-            CLEAN = 1,
-            EMPTY = 2
-        } FileFlags;
+        typedef struct FileHeader {
+            FileHeader(size_t size = 0, bool clean = true) 
+                : size(size), clean(clean) {}
 
-        const FileFlags DEFAULT_FLAGS = (FileFlags)(FileFlags::CLEAN | FileFlags::EMPTY);
+            bool clean;
+            size_t size;
+
+            friend std::ostream operator<<(std::ostream& os, const FileHeader& f) {
+                if (f.clean)
+                    os << "clean" << std::endl;
+                else
+                    os << "not clean" << std::endl;
+
+                os << "size: " << f.size << std::endl;
+            }
+
+            operator const char*() const {
+                return reinterpret_cast<const char*>(this);
+            }
+        } FileHeader;
+
+        template <typename RType>
+        struct Register {
+            Register() : Register(RType()) {}
+            Register(const T& data) : valid(true), data(data) {}
+
+            bool valid;
+            const RType& data;
+
+            template <typename U>
+            friend std::ostream operator<<(std::ostream& os, const Register<U>& r) {
+                if (r.valid)
+                    os << "valid";
+                else
+                    os << "invalid";
+                os << " " << r.data;
+            }
+
+            operator const char*() const {
+                Serializer serializer;
+                return (std::string(1, (char)valid) + 
+                       std::string(serializer.serialize(data).get())).c_str();
+            }
+
+            char* c_ptr() {
+                return reinterpret_cast<char*>(&valid);
+            }
+        };
 
         FileStorage(std::string path) : path(path)
         {
             static_assert(std::is_base_of<ConstantSizeSerializer<T>, Serializer>::value, 
                           "Serializer must derive from DataSerializer");
 
-            using std::fstream;
+            using std::ofstream;
 
-            fstream file(path, std::ifstream::binary);
+            ofstream file(path, std::ifstream::binary);
             if (!file.good()) { // if file does not exist, creates it
-                file.open(path, fstream::out | fstream::binary | fstream::trunc);
-                file.write(reinterpret_cast<const char*>(&DEFAULT_FLAGS), sizeof(FileFlags));
+                file.open(path, ofstream::out | ofstream::binary | ofstream::trunc);
+                writeHeader(file, FileHeader());
             }
         }
 
-        FileFlags flags() {
+        FileHeader header() {
             std::ifstream file(path, std::ifstream::in | std::ifstream::binary);
-            return flags(file);
+            return header(file);
         }
 
         bool clean() {
-            return flags() & FileFlags::CLEAN;
+            return header().clean;
         }
 
         bool empty() {
-            return flags() & FileFlags::EMPTY;
+            return header().size == 0;
         }
 
         void remove(size_t index) {
@@ -112,19 +154,16 @@ class FileStorage {
                 file << false;
         }
 
-        void write(const T& data, size_t index = -1) {
-            std::ofstream file(path, std::ofstream::out | std::ofstream::binary | std::ofstream::app);
-            if (index >= 0)
-                setOutPosition(file, index);
-            bool valid = true;
-            file.write(reinterpret_cast<const char*>(&valid), sizeof(bool));
-            file.write(serializer.serialize(data).get(), serializer.serialize_size());
+        void write(const T& data, size_t index = 0) {
+            std::ofstream file(path, std::ofstream::out | std::ofstream::binary);
+            setOutPosition(file, index);
+            file.write(Register<T>(data), sizeof(Register<T>));
         }
 
         T read(size_t index) {
-            std::ifstream file(path, std::ifstream::in | std::ifstream::binary)
-            std::pair<bool, T> data(readln(file, index));
-            return data.second;
+            std::ifstream file(path, std::ifstream::in | std::ifstream::binary);
+            Register<T> r(readln(file, index));
+            return r.data;
         }
 
         std::set<size_t> rewrite() {
@@ -133,7 +172,7 @@ class FileStorage {
             std::fstream tmp(tmpFilePath, std::fstream::out | std::fstream::trunc);
 
             // copies file flags to temporary file
-            tmp << (int)(flags(file) & FileFlags::EMPTY);
+            writeHeader(tmp, FileHeader(true, header().size));
             // positions read cursor at first record
             setInPosition(file, 0);
 
@@ -172,14 +211,14 @@ class FileStorage {
             file.read(reinterpret_cast<char*>(&i), sizeof(int));
             os << "Flags: " << i << std::endl;
             while (!file.eof()) {
-                std::pair<bool, T> data(s.readln(file));
+                Register<T> r(s.readln(file));
 
-                if (data.first)
+                if (r.valid)
                     os << "valid";
                 else 
                     os << "invalid";
 
-                os << " " << data.second << std::endl;
+                os << " " << r.data << std::endl;
             }
 
             return os;
@@ -188,35 +227,39 @@ class FileStorage {
     private:
         std::string path;
 
-        FileFlags flags(std::ifstream& file) const {
-            std::streampos startPos = file.tellg();
-            file.seekg(0, file.beg);
-            int i;
-            file.read(reinterpret_cast<char*>(&i), sizeof(FileFlags));
-            file.seekg(startPos, file.beg);
-            return static_cast<FileFlags>(i);
+        void writeHeader(std::ofstream& file, const FileHeader& header) {
+            std::streampos startPos = file.tellp();
+            file.seekp(0, file.beg);
+            file.write(header, sizeof(FileHeader));
+            file.seekp(startPos, file.beg);
         }
 
-        std::pair<bool, T> readln(std::ifstream& file, size_t line = -1) const {
-            if (line > -1)
-                setInPosition(file, line);
+        FileHeader header(std::ifstream& file) const {
+            std::streampos startPos = file.tellg();
+            file.seekg(0, file.beg);
+            FileHeader header;
+            file.read(reinterpret_cast<char*>(&header), sizeof(FileHeader));
+            file.seekg(startPos, file.beg);
+            return header;
+        }
 
-            bool valid;
-            file.read(reinterpret_cast<char*>(&valid), sizeof(bool));
+        Register<T> readln(std::ifstream& file, size_t line) const {
+            setInPosition(file, line);
+            readln(file);
+        }
 
-            std::unique_ptr<char> bytes(serializer.allocate_ptr());
-            file.read(bytes.get(), serializer.serialize_size());
-            T data(serializer.deserialize(bytes));
-
-            return std::pair<bool, T>(valid, data);
+        Register<T> readln(std::ifstream& file) const {
+            Register<T> r;
+            file.read(r.c_ptr(), sizeof(Register<T>));
+            return r;
         }
 
         void setOutPosition(std::ofstream& file, size_t offset) {
-            file.seekp(sizeof(FileFlags) + offset * (sizeof(bool) + serializer.serialize_size()), file.beg);
+            file.seekp(sizeof(FileHeader) + offset * sizeof(Register<T>), file.beg);
         }
 
         void setInPosition(std::ifstream& file, size_t offset) const {
-            file.seekg(sizeof(FileFlags) + offset * (sizeof(bool) + serializer.serialize_size()), file.beg);
+            file.seekg(sizeof(FileHeader) + offset * sizeof(Register<T>), file.beg);
         }
 };
 

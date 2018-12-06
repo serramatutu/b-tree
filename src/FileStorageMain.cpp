@@ -22,7 +22,7 @@ int main() {
         if (op == 'w')
             t.write(num, index);
         else if (op == 'f')
-            cout << "Flags: " << t.flags() << endl;
+            cout << "Header: " << t.header() << endl;
         else if (op == 'r')
             cout << "Read: " << t.read(num) << endl;
         else if (op == 'd')
